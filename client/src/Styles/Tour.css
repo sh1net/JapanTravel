@@ -1,0 +1,45 @@
+.tour__box{
+    display:flex;
+    flex-direction:column;
+    border: 6px solid rgb(113, 19, 201);
+    border-radius: 20px;
+    margin:20px;
+    width:20%;
+    padding:10px;
+    background: transparent;
+    backdrop-filter:blur(15px);
+}
+
+.tour__info{
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.tour__description,.tour__price{
+    padding:10px;
+}
+
+.tour_about{
+    border:none;
+    color: rgb(113, 19, 201); 
+    font-size: 20px;
+}
+.tour_about:hover{
+    color: rgb(167, 113, 218);
+}
+
+.tour_delete{
+    width:50%;
+    align-self: flex-start;
+    background-color: rgb(113, 19, 201); 
+    border-radius: 20px;
+    padding:3px;
+    border:1px solid transparent;
+    color:white;
+}
+
+.tour_delete:hover{
+    background-color: rgb(167, 113, 218);
+    color:black;
+}
