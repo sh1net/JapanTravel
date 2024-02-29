@@ -1,11 +1,20 @@
 import React from 'react'
-import Navbar from './Navbar'
+import Navbar from '../Components/Navbar'
+import { useNavigate } from 'react-router-dom';
+import {useDispatch } from 'react-redux' 
+import { setIsAuth } from '../Redux/authSlice';
 
 function User() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const unAuth = () => {
+    dispatch(setIsAuth(false));
+    navigate('/');
+  };
   return (
     <div>
       <Navbar/>
-      Профиль
+      <button onClick={unAuth}>Выйти</button>
     </div>
   )
 }

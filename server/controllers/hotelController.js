@@ -20,11 +20,28 @@ class HotelController{
     }
     async getAll(req,res){
         const hotels = await Hotel.findAll()
-        return hotels
+        return res.json(hotels)
 
     }
-    async getOne(req,res){
-
+    async getOne(req,res,next){
+        try{
+            const {id} = req.params
+            const hotel = await Hotel.findOne({
+                where:{
+                    id
+                }
+            })
+            if(!hotel){
+                return next(ApiError.badRequest("Отель не найден"))
+            }
+            else{
+                return res.json(hotel)
+            }
+            
+        }
+        catch(e){
+            return next(ApiError.badRequest("Ошибка сервера"))
+        }
     }
 }
 

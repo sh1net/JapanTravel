@@ -6,6 +6,7 @@ const {DataTypes} = require('sequelize')//позволяет описать ти
 const User=sequelize.define('user',{
     id:{type: DataTypes.INTEGER,primaryKey:true,autoIncrement:true},
     email:{type:DataTypes.STRING,unique:true},
+    password: {type: DataTypes.STRING},
     role:{type:DataTypes.STRING,defaultValue:"USER"}
 })
 
@@ -22,12 +23,12 @@ const Tour=sequelize.define('tour',{
     name:{type: DataTypes.STRING,unique:true,allowNull:false},
     rating:{type: DataTypes.INTEGER,allowNull:false},
     price:{type: DataTypes.INTEGER,defaultValue:0},
-    photo:{type: DataTypes.STRING,unique:true,allowNull:false},
+    img:{type: DataTypes.STRING,unique:true,allowNull:false},
 })
 
 const Hotel=sequelize.define('hotel',{
     id:{type: DataTypes.INTEGER,primaryKey:true,autoIncrement:true},
-    name:{type: DataTypes.STRING,allowNull:true},
+    name:{type: DataTypes.STRING,allowNull:false},
     img:{type: DataTypes.STRING,unique:true,allowNull:false},
     description:{type: DataTypes.STRING,unique:true,allowNull:false},
 })
@@ -48,6 +49,10 @@ const TourInfo=sequelize.define('tour_info',{
     description:{type: DataTypes.STRING,allowNull:false}
 })
 
+const TourBasketTour = sequelize.define('tour_basket_tour',{
+    id:{type: DataTypes.INTEGER, primaryKey: true, autoIncrement:true}
+})
+
 User.hasOne(Basket)// у пользователя одна корзина
 Basket.belongsTo(User)
 
@@ -57,8 +62,14 @@ Rating.belongsTo(User)
 Basket.hasMany(BasketTour)
 BasketTour.belongsTo(Basket)
 
+Tour.belongsToMany(BasketTour,{through: TourBasketTour})
+BasketTour.belongsToMany(Tour,{through: TourBasketTour})
+
 TourInfo.hasOne(Hotel)
 Hotel.belongsTo(TourInfo)
+
+Hotel.hasMany(TourInfo)
+TourInfo.belongsTo(Hotel)
 
 Tour.hasMany(Rating)
 Rating.belongsTo(Tour)
@@ -81,5 +92,6 @@ module.exports = {
     TourInfo, 
     Hotel, 
     Rating,
-    Reviews
+    Reviews,
+    TourBasketTour
 }

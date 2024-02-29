@@ -1,6 +1,6 @@
 import React from 'react'
 import "../Styles/Main.css"
-import Navbar from './Navbar'
+import Navbar from '../Components/Navbar'
 
 function Main() {
   return (

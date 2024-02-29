@@ -1,6 +1,5 @@
 export const ADMIN_ROUTE ='/admin'
-export const LOGIN_ROUTE ='/login'
-export const REGISTRATION_ROUTE ='/registration'
+export const AUTHORIZATION_ROUTE ='/authorization'
 export const ABOUTUS_ROUTE ='/aboutus'
 export const BASKET_ROUTE ='/basket'
 export const CONTACTS_ROUTE ='/contacts'
