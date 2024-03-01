@@ -25,7 +25,7 @@ export const authRoutes = [
     },
     {
         path: BASKET_ROUTE,
-        element: <Basket/>
+        element: <Basket/>,
     },
     {
         path: USER_ROUTE,

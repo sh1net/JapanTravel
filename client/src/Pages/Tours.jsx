@@ -16,7 +16,9 @@ function Tours() {
 
   const dispatch = useDispatch()
 
-  const addTask = ()=>dispatch(addTour(tour))
+  const addTask = ()=>{
+    dispatch(addTour(tour))
+  }
 
   return (
     <div>

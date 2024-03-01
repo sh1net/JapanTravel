@@ -1,18 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '../Components/Navbar';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setIsAuth } from '../Redux/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectIsAuth, setIsAuth } from '../Redux/authSlice';
 import "../Styles/Registration.css"
 
 function Authorization() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isAuth = useSelector(selectIsAuth)
 
   const setAuth = () => {
     dispatch(setIsAuth(true));
-    navigate('/');
   };
+
+  useEffect(() =>{
+    if(isAuth){
+      navigate('/Tours')
+    }
+  },[isAuth])
+  
 
   return (
     <div className="container">
