@@ -1,17 +1,11 @@
 import React from 'react'
 import "../Styles/Logo.css"
+import TravelLogo from "../Image/Logo.png"
 
 function Logo() {
   return (
     <div className="logo">
-      <div className="japan">
-        <p className="ja">JA</p>
-        <p className="p">P</p>
-        <p className="an">AN</p>
-      </div>
-      <div className="travel__box">
-        <p className="travel">travel</p>
-      </div>
+       <img src={TravelLogo} alt="Описание изображения" className='logo_image'/>
     </div>
     
   )

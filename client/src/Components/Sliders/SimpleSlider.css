@@ -1,0 +1,36 @@
+.slider-container {
+  width: 100%;
+  max-width: 100%;
+  margin: auto;
+  overflow: hidden; /* Чтобы избежать появления горизонтального скролла */
+}
+
+/* Изображения в слайдере, чтобы они растягивались на всю ширину */
+.slider-container img {
+  width: 100%;
+  height: 100%;
+}
+
+.slide-item {
+  width: 100%;
+  height: 1100px; /* Устанавливайте желаемую высоту для слайдов */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white; /* Цвет текста */
+  text-align: center;
+}
+
+.slide-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+}
+

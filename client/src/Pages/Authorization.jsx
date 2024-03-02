@@ -18,7 +18,7 @@ function Authorization() {
     if(isAuth){
       navigate('/Tours')
     }
-  },[isAuth])
+  },[isAuth,navigate])
   
 
   return (

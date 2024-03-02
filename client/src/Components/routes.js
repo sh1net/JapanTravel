@@ -31,6 +31,10 @@ export const authRoutes = [
         path: USER_ROUTE,
         element: <User/>,
     },
+    {
+        path: MAIN_ROUTE,
+        element: <Main/>
+    },
 ]
 
 export const publicRoutes = [
