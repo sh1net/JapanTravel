@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   isAuth: false,
+  user: {},
 };
 
 const authSlice = createSlice({
@@ -12,10 +13,14 @@ const authSlice = createSlice({
     setIsAuth: (state, action) => {
       state.isAuth = action.payload;
     },
+    setUser: (state, action) => {
+      state.user = action.payload; // Теперь просто присваиваем значение
+    },
   },
 });
 
-export const { setIsAuth } = authSlice.actions;
+export const { setIsAuth, setUser } = authSlice.actions;
 export const selectIsAuth = (state) => state.auth.isAuth;
+export const selectUser = (state) => state.auth.user;
 
 export default authSlice.reducer;

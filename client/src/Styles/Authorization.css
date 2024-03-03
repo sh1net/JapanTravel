@@ -1,0 +1,73 @@
+.container{
+    flex-direction: column;
+    display:flex;
+    align-items: center;
+}
+
+.reg_container{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    max-width:500px;
+    margin:50px;
+    display:flex;
+    flex-direction:column;
+    width:40%;
+    border: 7px solid #6e00ff;
+    border-radius: 30px;
+    padding:30px;
+    justify-content: space-between;
+    backdrop-filter: blur(100px);
+}
+
+.reg_reg_text{
+    align-self: center;
+}
+
+.reg_text{
+    font-size: 25px;
+    margin-bottom:10px;
+    margin-top: 20px;
+}
+
+.reg_input{
+    border: 3px solid #935fff; 
+    border-radius:10px;
+    padding:5px;
+    font-size: 20px;
+}
+
+.accept_login{
+    margin-top:20px;
+    padding:5px 20px 5px 20px;
+    color:#935fff;
+    border: 2px solid #935fff;
+    border-radius: 15px;
+    background-color: white;
+    font-size: 20px;
+    width:fit-content;
+    align-self:center;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s;
+}
+
+.reg_log_text{
+    width:fit-content;
+    font-size: 25px;
+    margin-bottom:10px;
+    color:black;
+    margin-top: 20px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.reg_log_text:hover{
+    color:#935fff;
+}
+
+.accept_login:hover{
+    border-color: #935fff;
+    background-color: #935fff;
+    color:white;
+}
+
+.reg_input:hover{
+    background-color: #e3cfff;
+}

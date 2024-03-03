@@ -12,11 +12,12 @@ import { ADMIN_ROUTE } from "../utils/consts"
 import { BASKET_ROUTE } from "../utils/consts"
 import { CONTACTS_ROUTE } from "../utils/consts"
 import { MAIN_ROUTE } from "../utils/consts"
-import { AUTHORIZATION_ROUTE } from "../utils/consts"
 import { TOURS_ROUTE } from "../utils/consts"
 import { USER_ROUTE } from "../utils/consts"
 import { ABOUTUS_ROUTE } from "../utils/consts"
 import { TOURABOUT_ROUTE } from "../utils/consts"
+import { REGISTRATION_ROUTE } from "../utils/consts"
+import { LOGIN_ROUTE } from "../utils/consts"
 
 export const authRoutes = [
     {
@@ -47,7 +48,11 @@ export const publicRoutes = [
         element: <Main/>
     },
     {
-        path: AUTHORIZATION_ROUTE,
+        path: REGISTRATION_ROUTE,
+        element: <Authorization/>
+    },
+    {
+        path: LOGIN_ROUTE,
         element: <Authorization/>
     },
     {

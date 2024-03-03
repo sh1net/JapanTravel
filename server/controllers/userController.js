@@ -48,7 +48,7 @@ class UserController{
             return res.json({token})
         }
         catch(e){
-            return next(ApiError.badRequest("Неверные email или пароль"))
+            return next(ApiError.badRequest("Внутренняя ошибка сервера"))
         }
     }
     async check(req,res,next){

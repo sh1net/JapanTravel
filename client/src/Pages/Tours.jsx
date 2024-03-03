@@ -1,49 +1,43 @@
-import React, { useState } from 'react'
-import Navbar from '../Components/Navbar'
-import PostTour from '../Tour/PostTour'
-import "../Styles/Tours.css"
-import {useDispatch} from "react-redux"
-import { addTour } from '../Redux/tourSlice'
+// Tours.js
+import React, { useState } from 'react';
+import Navbar from '../Components/Navbar';
+import "../Styles/Tours.css";
 
-function Tours() {
+const Tours = () => {
+  const [showFilters, setShowFilters] = useState(false);
 
-  const [tour,setTour]=useState({
-    name:"",
-    description:"",
-    price:"",
-    rating:"0"
-  })
-
-  const dispatch = useDispatch()
-
-  const addTask = ()=>{
-    dispatch(addTour(tour))
-  }
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
 
   return (
-    <div>
-      <Navbar/>
-      <div className="input_container">
-        <input 
-          placeholder="Введите название тура"
-          onChange={e=>setTour({...tour,name:e.target.value})}
-          className="tour_input"
-        ></input>
-        <input 
-          placeholder="Введите описание тура"
-          onChange={e=>setTour({...tour,description:e.target.value})}
-          className="tour_input"
-        ></input>
-        <input 
-          placeholder="Введите стоимость тура"
-          onChange={e=>setTour({...tour,price:e.target.value})}
-          className="tour_input"
-        ></input>
-        <button onClick={addTask} className="input_button">Создать тур</button>
+    <div className="container">
+      <Navbar />
+      <div className='tour_main_container'>
+        <div className='search_filter_container'>
+          <div className="filter">
+            <button className="filter_btn" onClick={toggleFilters}>Фильтры</button>
+          </div>
+            <input className='search' type="text" placeholder="Поиск..." />
+        </div>
+        <div className='filter_tours_container'>
+          {showFilters && (
+            <div className="filters_panel">
+              <p>Фильтр 1</p>
+              <p>Фильтр 2</p>
+              <p>Фильтр 3</p>
+              <p>Фильтр 1</p>
+              <p>Фильтр 2</p>
+              <p>Фильтр 3</p>
+            </div>
+          )}
+          <div className="grid-container">
+            <div className="grid-item">Элемент 1</div>
+          </div>
+        </div>
       </div>
-        <PostTour />
     </div>
-  )
+  );
 }
 
-export default Tours
+export default Tours;

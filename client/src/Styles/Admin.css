@@ -1,0 +1,32 @@
+.tour_input{
+    margin:20px;
+    border: 3px solid rgb(113, 19, 201); 
+    border-radius:10px;
+    padding:5px;
+    font-size: 15px;
+}
+
+.input_container{
+    display:flex;
+    margin-left:40px;
+    min-width:250px;
+    max-width: 20%;
+    flex-direction: column;
+}
+
+.input_button{
+    min-width:250px;
+    font-size:20px;
+    max-width: 20%;
+    border-radius: 20px;
+    padding:3px;
+    border:1px solid transparent;
+    align-self: center;
+    background-color: rgb(113, 19, 201);
+    color: white; 
+}
+
+.input_button:hover{
+    background-color: rgb(167, 113, 218);
+    color:black;
+}

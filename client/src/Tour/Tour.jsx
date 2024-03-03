@@ -1,7 +1,7 @@
 import React from 'react'
 import "../Styles/Tour.css"
 
-function Tour({id,name,description,price,rating}) {
+function Tour({name,description,price,rating}) {
   return (
     <div className="tour__box">
         <p style={{fontSize:"30px",color:"purple"}}>{name}</p>

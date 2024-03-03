@@ -4,6 +4,7 @@ import "../Styles/Navbar.css";
 import Logo from "../Components/Logo.jsx";
 import { useSelector } from "react-redux";
 import { selectIsAuth } from '../Redux/authSlice';
+import { LOGIN_ROUTE } from '../utils/consts.js';
 
 function Navbar() {
   const isAuth = useSelector(selectIsAuth);
@@ -54,7 +55,7 @@ function Navbar() {
             <NavLink to="/Tours">Туры</NavLink>
             <NavLink to="/Contacts">Контакты</NavLink>
             <NavLink to="/AboutUs">О нас</NavLink>
-            <NavLink to="/Authorization">Авторизация</NavLink>
+            <NavLink to={LOGIN_ROUTE}>Авторизация</NavLink>
           </div>
         </>
       }

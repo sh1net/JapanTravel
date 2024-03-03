@@ -1,41 +1,70 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectIsAuth, setIsAuth } from '../Redux/authSlice';
-import "../Styles/Registration.css"
+import "../Styles/Authorization.css";
+import {LOGIN_ROUTE, REGISTRATION_ROUTE} from "../utils/consts"
+import { registration, login } from "../http/userApi"
+import { setIsAuth, setUser } from '../Redux/authSlice';
+import { useDispatch } from 'react-redux';
 
 function Authorization() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const isAuth = useSelector(selectIsAuth)
+  const location = useLocation();
+  const isLogin = location.pathname === LOGIN_ROUTE
+  const navigate = useNavigate()
+  const [email,setEmail] = useState('')
+  const [password,setPassword] = useState('')
+  const dispatch = useDispatch()
 
-  const setAuth = () => {
-    dispatch(setIsAuth(true));
-  };
 
-  useEffect(() =>{
-    if(isAuth){
-      navigate('/Tours')
+  const click = async () => {
+    try{
+      let data
+      if(isLogin){
+        data = await login(email,password)
+        console.log(data)
+      }
+      else{
+        data = await registration(email,password)
+        console.log(data)
+      }
+      dispatch(setIsAuth(true))
+      dispatch(setUser(data))
+      navigate('/')
     }
-  },[isAuth,navigate])
-  
+    catch(e){
+      alert(e.response.data.message)
+    }
+  }
 
   return (
     <div className="container">
       <Navbar />
       <div className="reg_container">
-        <h1 className="reg_reg_text">Авторизация</h1>
-        <p className="reg_text">Введите номер телефона</p>
-        <input id="phoneNumber" name="phoneNumber" placeholder="Введите" className="reg_input" />
+        <h1 className="reg_reg_text">
+        {isLogin 
+          ? 'Авторизация' 
+          : 'Регистрация'
+        }</h1>
         <p className="reg_text">Введите почту</p>
-        <input id="email" name="email" placeholder="Введите" className="reg_input" />
+        <input 
+          placeholder="Введите" 
+          className="reg_input"
+          value={email}
+          onChange={e=>setEmail(e.target.value)}
+        />
         <p className="reg_text">Введите пароль</p>
-        <input id="password" name="password" type="password" placeholder="Введите" className="reg_input" />
-        <button className="accept_login" onClick={setAuth}>
-          Подтвердить
-        </button>
-        <p className="reg_text">Уже есть аккаунт?</p>
+        <input 
+          type="password" 
+          placeholder="Введите" 
+          className="reg_input" 
+          value={password}
+          onChange={e=>setPassword(e.target.value)}
+        />
+        <button className="accept_login" onClick={click}>Подтвердить</button>
+        {isLogin
+          ? <Link to={REGISTRATION_ROUTE} className="reg_log_text">Нет аккаунта?</Link>
+          : <Link to={LOGIN_ROUTE} className="reg_log_text">Уже есть аккаунт?</Link>
+        }
       </div>
     </div>
   );
