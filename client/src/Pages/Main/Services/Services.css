@@ -1,0 +1,38 @@
+.services-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+}
+
+.service_container_container {
+    gap: 50px;
+    margin: 30px;
+    display: flex;
+    flex-direction: row;
+}
+  
+.service-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: 10px;
+    border: 2px solid white;
+    border-radius: 15px;
+    transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+  
+.service-item:hover {
+    border-color: #5f00a8;
+    transform: scale(1.05); /* Увеличивает размер при наведении */
+}
+  
+.service-item h3 {
+    margin-bottom: 10px;
+}
+  
+.service-item span {
+    margin-bottom: 10px;
+}
+  

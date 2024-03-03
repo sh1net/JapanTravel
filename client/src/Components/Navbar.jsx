@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import "../Styles/Navbar.css";
 import Logo from "../Components/Logo.jsx";
@@ -9,8 +9,28 @@ function Navbar() {
   const isAuth = useSelector(selectIsAuth);
   const location = useLocation();
 
+
+  const [isSticky, setIsSticky] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = window.scrollY;
+      const threshold = 100; // Измените этот порог, если необходимо
+
+      setIsSticky(offset > threshold);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+
+
   return (
-    <div className="navbar">
+    <div className={`navbar ${isSticky ? 'sticky' : ''}`}>
       {isAuth ?
         <>
           <div className="logo_position">
