@@ -15,24 +15,22 @@ function Authorization() {
   const [password,setPassword] = useState('')
   const dispatch = useDispatch()
 
-
   const click = async () => {
     try{
       let data
       if(isLogin){
         data = await login(email,password)
-        console.log(data)
+        dispatch(setIsAuth(true))
+        dispatch(setUser(data))
+        navigate('/')
       }
       else{
         data = await registration(email,password)
-        console.log(data)
+        navigate(LOGIN_ROUTE)
       }
-      dispatch(setIsAuth(true))
-      dispatch(setUser(data))
-      navigate('/')
     }
     catch(e){
-      alert(e.response.data.message)
+      alert(e.response?.data.message || 'Произошла ошибка');
     }
   }
 

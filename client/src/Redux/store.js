@@ -1,12 +1,14 @@
 // store/index.js
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './authSlice'; // Импортируйте созданный редюсер
+import authReducer from './authSlice';
 import tourReducer from './tourSlice';
+import hotelReducer from './hotelSlice'
 
 const store = configureStore({
   reducer: {
-    auth: authReducer, // Добавьте созданный редюсер
+    auth: authReducer,
     tour: tourReducer,
+    hotel: hotelReducer,
   },
 });
 

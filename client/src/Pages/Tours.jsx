@@ -1,14 +1,21 @@
-// Tours.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../Components/Navbar';
 import "../Styles/Tours.css";
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchToursAsync } from '../Redux/tourSlice';
 
 const Tours = () => {
   const [showFilters, setShowFilters] = useState(false);
+  const tours = useSelector(state => state.tour.tours);
+  const dispatch = useDispatch();
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
+
+  useEffect(() => {
+    dispatch(fetchToursAsync());
+  }, [dispatch]);
 
   return (
     <div className="container">
@@ -18,7 +25,7 @@ const Tours = () => {
           <div className="filter">
             <button className="filter_btn" onClick={toggleFilters}>Фильтры</button>
           </div>
-            <input className='search' type="text" placeholder="Поиск..." />
+          <input className='search' type="text" placeholder="Поиск..." />
         </div>
         <div className='filter_tours_container'>
           {showFilters && (
@@ -32,7 +39,14 @@ const Tours = () => {
             </div>
           )}
           <div className="grid-container">
-            <div className="grid-item">Элемент 1</div>
+            {tours.map(tour => (
+              <div key={tour.id} className="grid-item">
+                <p>{tour.name}</p>
+                <p>{tour.description}</p>
+                <p>{tour.price}</p>
+                <p>{tour.rating}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
