@@ -1,0 +1,22 @@
+.before_footer_container{
+    display:flex;
+    justify-content: space-around;
+    align-items:center;
+    padding: 70px 30px;
+    background-color: white;
+    color:black;
+    font-size:40px;
+}
+
+.toContact{
+    text-decoration: none;
+    border:5px solid black;
+    color:black;
+    border-radius: 40px;
+    padding: 5px 40px;
+}
+
+.toContact:hover{
+    border:5px solid rgb(63, 63, 63);
+    color:rgb(63, 63, 63);
+}

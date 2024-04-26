@@ -1,0 +1,11 @@
+.about_page_container{
+    padding:1px;
+    background-color: rgb(43, 43, 43);
+    color:white;
+}
+
+.about_persons{
+    padding:25px;
+    display:flex;
+    justify-content: center;
+}

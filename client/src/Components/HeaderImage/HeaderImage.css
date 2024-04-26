@@ -1,0 +1,19 @@
+.main_page_container {
+  position: relative; /* Обязательно указывайте позицию, чтобы псевдоэлемент отображался корректно */
+  background-image: url('../../Image/main_page_1.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 90vh;
+}
+
+.main_page_container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: inherit; /* Наследуем фоновое изображение от родительского элемента */
+  filter: blur(5px); /* Указываем значение размытия, например, 5px */
+  z-index: -1;
+}

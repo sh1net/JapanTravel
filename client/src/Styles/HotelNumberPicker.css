@@ -1,0 +1,36 @@
+.hotel_number_picker {
+    background-color: white;
+    color: white;
+    box-shadow: inset;
+    color: black;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .hotel_number {
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #ced4da;
+    background-color: #f8f9fa;
+    font-size: 15px;
+    border-radius: 5px;
+  }
+  
+  .hotel_number:hover {
+    background-color: #90c6ff;
+    color: black;
+  }
+  
+  .hotel_number.selected {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .hotel_number.disabled {
+    background-color: rgb(141, 141, 141);
+    color: black;
+    cursor: not-allowed;
+  }
+  
