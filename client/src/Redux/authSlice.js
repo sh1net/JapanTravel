@@ -14,7 +14,7 @@ const authSlice = createSlice({
       state.isAuth = action.payload;
     },
     setUser: (state, action) => {
-      state.user = action.payload; // Теперь просто присваиваем значение
+      state.user = action.payload;
     },
   },
 });

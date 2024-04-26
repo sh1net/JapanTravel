@@ -1,10 +1,10 @@
 import React from 'react'
-import Navbar from '../Components/Navbar'
+import "../Styles/Contacts.css"
 
 function Contacts() {
   return (
-    <div>
-      <Navbar/>
+    <div className='contacts_page_container'>
+      <h1>ЗДЕСЬ БУДУТ КОНТАКТЫ</h1>
     </div>
   )
 }

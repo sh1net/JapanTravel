@@ -10,14 +10,12 @@ function Navbar() {
   const isAuth = useSelector(selectIsAuth);
   const location = useLocation();
 
-
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      const threshold = 100; // Измените этот порог, если необходимо
-
+      const threshold = 100;
       setIsSticky(offset > threshold);
     };
 
@@ -28,11 +26,12 @@ function Navbar() {
     };
   }, []);
 
-
+  // Проверка текущего пути для определения стиля navbar
+  const isHomePage = location.pathname === '/';
 
   return (
-    <div className={`navbar ${isSticky ? 'sticky' : ''}`}>
-      {isAuth ?
+    <div className={`navbar ${isSticky ? 'sticky' : ''} ${isHomePage ? 'home' : ''}`}>
+      {isAuth ? (
         <>
           <div className="logo_position">
             <Link to="/"><Logo /></Link>
@@ -46,7 +45,7 @@ function Navbar() {
             <NavLink to="/User">Профиль</NavLink>
           </div>
         </>
-        :
+      ) : (
         <>
           <div className="logo_position">
             <Link to="/"><Logo /></Link>
@@ -58,8 +57,7 @@ function Navbar() {
             <NavLink to={LOGIN_ROUTE}>Авторизация</NavLink>
           </div>
         </>
-      }
-
+      )}
     </div>
   );
 

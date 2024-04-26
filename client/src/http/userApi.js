@@ -9,13 +9,58 @@ export const registration = async (email, password) => {
 export const login = async (email, password) => {
     const { data } = await $host.post('api/user/login', { email, password });
     localStorage.setItem('token',data.token)
+    console.log(data.token)
+    return jwtDecode(data.token);
+} 
+
+export const check = async () => {
+    const token = localStorage.getItem('token');
+    const { data } = await $authHost.get('api/user/auth', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
     return jwtDecode(data.token);
 }
 
-export const check = async () => {
-    const {data} = await $authHost.get('api/user/auth');
-    localStorage.setItem('token',data.token)
-    return jwtDecode(data.token);
+export const checkPassword = async (oldPassword) => {
+    try{
+        const {data} = await $authHost.post('/api/user/checkPassword', {oldPassword})
+        console.log(data)
+        return data
+    }catch(e){
+        alert(e.message)
+    }
+}
+
+export const updateUser = async (updatedUser) => {
+    try {
+        const { data } = await $authHost.patch('/api/user/update', updatedUser);
+        console.log(data);
+    } catch (e) {
+        console.error("Ошибка при обновлении пользователя:", e.message);
+    }
+}
+
+
+
+export const getUserData = async () =>{
+    try{
+        const token = await check()
+        if(!token){
+            throw new Error('токен не найден')
+        }
+        const { data } = await $authHost.get('api/user/profile', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return data;
+    }
+    catch(e){
+        console.error('Ошибка в коде')
+        return null
+    }
 }
 
 export const logout = () => {

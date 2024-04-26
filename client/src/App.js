@@ -1,5 +1,6 @@
-// App.js
 import React, { useEffect, useState } from "react";
+import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer";
 import "./Styles/App.css";
 import { BrowserRouter } from "react-router-dom";
 import AppRouter from "./Components/AppRouter";
@@ -48,7 +49,9 @@ function App() {
 
     return (
         <BrowserRouter>
-            <AppRouter />
+            <Navbar/>
+            <AppRouter/>
+            <Footer/>
         </BrowserRouter>
     );
 }

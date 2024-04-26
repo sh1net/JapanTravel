@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchTours } from "../http/tourApi";
+import { fetchTours, createTours } from "../http/tourApi";
+import { fetchOneTour } from "../http/tourApi";
 
 const initialState = {
   tours: [],
@@ -10,7 +11,29 @@ const initialState = {
 export const fetchToursAsync = createAsyncThunk("tour/fetchTours", async () => {
   try{
     const response = await fetchTours();
-    return response.data;
+    return response.rows;
+  }
+  catch(error){
+    console.error("Error fetching tours", error);
+    throw error;
+  }
+})
+
+export const fetchOneTourAsync = createAsyncThunk("tour/fetchtour/id", async (id) => {
+  try{
+    const response = await fetchOneTour(id)
+    return response;
+  }
+  catch(error){
+    console.error("Error fetching One tour", error)
+    throw error
+  }
+})
+
+export const createToursAsync = createAsyncThunk("tour/createTours", async (name, rating, price, img) => {
+  try{
+    const response = await createTours(name, rating, price, img);
+    return response;
   }
   catch(error){
     console.error("Error fetching tours", error);
@@ -49,5 +72,6 @@ const tourSlice = createSlice({
   }
 });
 
+export const selectTours = (state) => state.tour.tours;
 export const { addTour } = tourSlice.actions;
 export default tourSlice.reducer;

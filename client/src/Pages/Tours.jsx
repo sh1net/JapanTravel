@@ -1,55 +1,67 @@
-import React, { useEffect, useState } from 'react';
-import Navbar from '../Components/Navbar';
+import React, { useState } from 'react';
 import "../Styles/Tours.css";
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchToursAsync } from '../Redux/tourSlice';
+import BeforeFooter from '../Components/BeforeFooter'
+import TourCategory from './Category/TourCategory';
+import HotelCategory from './Category/HotelCategory';
 
 const Tours = () => {
   const [showFilters, setShowFilters] = useState(false);
-  const tours = useSelector(state => state.tour.tours);
-  const dispatch = useDispatch();
+  const [searchObject,setSearchObject] = useState('');
+  const [activeCategory, setActiveCategory] = useState('places');
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
 
-  useEffect(() => {
-    dispatch(fetchToursAsync());
-  }, [dispatch]);
-
+  const handleSearchChange = (e) => {
+    setSearchObject(e.target.value)
+  }
+  
   return (
-    <div className="container">
-      <Navbar />
+    <div className="tour_page_container">
       <div className='tour_main_container'>
         <div className='search_filter_container'>
           <div className="filter">
             <button className="filter_btn" onClick={toggleFilters}>Фильтры</button>
           </div>
-          <input className='search' type="text" placeholder="Поиск..." />
+          <input 
+            className='search' 
+            type="text" 
+            placeholder="Поиск..."
+            value={searchObject}
+            onChange={handleSearchChange} 
+          />
+        </div>
+        <div className="category_buttons">
+          <button onClick={() => setActiveCategory('places')} className='category_button'>Достопримечательности</button>
+          <button onClick={() => setActiveCategory('hotels')} className='category_button'>Отели</button>
+          <button onClick={() => setActiveCategory('tours')} className='category_button'>Туры</button>
         </div>
         <div className='filter_tours_container'>
           {showFilters && (
             <div className="filters_panel">
-              <p>Фильтр 1</p>
-              <p>Фильтр 2</p>
-              <p>Фильтр 3</p>
-              <p>Фильтр 1</p>
-              <p>Фильтр 2</p>
-              <p>Фильтр 3</p>
+              <p>Город</p>
+              <p>Отель</p>
+              <p>Стоимость</p>
+              <p>Рейтинг</p>
+              <p>Отсавшиеся билеты на дату</p>
+              <p>Промежуточная дата</p>
             </div>
           )}
-          <div className="grid-container">
-            {tours.map(tour => (
-              <div key={tour.id} className="grid-item">
-                <p>{tour.name}</p>
-                <p>{tour.description}</p>
-                <p>{tour.price}</p>
-                <p>{tour.rating}</p>
-              </div>
-            ))}
-          </div>
         </div>
+        {activeCategory === 'places' ?
+          <TourCategory searchObject={searchObject} setSearchObject={setSearchObject}/>
+          :
+          <></>
+        }
+
+        {activeCategory === 'hotels' ?
+          <HotelCategory searchObject={searchObject} setSearchObject={setSearchObject}/>
+          :
+          <></>
+        }
       </div>
+      <BeforeFooter/>
     </div>
   );
 }

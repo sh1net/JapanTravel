@@ -1,21 +1,16 @@
-.container{
-    flex-direction: column;
-    display:flex;
-    align-items: center;
-}
-
 .reg_container{
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    max-width:500px;
     margin:50px;
     display:flex;
     flex-direction:column;
-    width:40%;
-    border: 7px solid #6e00ff;
+    width:450px;
+    border: 7px solid white;
     border-radius: 30px;
     padding:30px;
     justify-content: space-between;
     backdrop-filter: blur(100px);
+    color:white;
+    background-color:rgb(43, 43, 43);
 }
 
 .reg_reg_text{
@@ -29,19 +24,21 @@
 }
 
 .reg_input{
-    border: 3px solid #935fff; 
-    border-radius:10px;
-    padding:5px;
-    font-size: 20px;
+    font-size: 20px; 
+    border: 3px solid transparent;
+    border-radius: 15px;
+    color: rgb(43, 43, 43);
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
 }
 
 .accept_login{
     margin-top:20px;
     padding:5px 20px 5px 20px;
-    color:#935fff;
-    border: 2px solid #935fff;
-    border-radius: 15px;
     background-color: white;
+    color: black;
+    border-radius: 15px;
     font-size: 20px;
     width:fit-content;
     align-self:center;
@@ -52,22 +49,26 @@
     width:fit-content;
     font-size: 25px;
     margin-bottom:10px;
-    color:black;
+    color:white;
     margin-top: 20px;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .reg_log_text:hover{
-    color:#935fff;
+    color: rgb(161, 161, 161);
 }
 
 .accept_login:hover{
-    border-color: #935fff;
-    background-color: #935fff;
+    background-color: rgb(75, 75, 75);
     color:white;
 }
 
+.reg_input:focus, .reg_input:hover{
+  outline: none;
+  border-color: rgb(100, 100, 100);
+}
+
 .reg_input:hover{
-    background-color: #e3cfff;
+    background-color: rgb(216, 216, 216);
 }

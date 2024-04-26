@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import Navbar from '../Components/Navbar';
 import "../Styles/Authorization.css";
 import {LOGIN_ROUTE, REGISTRATION_ROUTE} from "../utils/consts"
 import { registration, login } from "../http/userApi"
@@ -35,8 +34,7 @@ function Authorization() {
   }
 
   return (
-    <div className="container">
-      <Navbar />
+    <div className="auth_page_container">
       <div className="reg_container">
         <h1 className="reg_reg_text">
         {isLogin 

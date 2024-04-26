@@ -4,9 +4,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #ffffff;
+    background-color: rgb(43, 43, 43);
     transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
     box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+    z-index: 1;
 }
 
 .logo_position {
@@ -31,7 +33,7 @@
 
 .page_position a {
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    color: black;
+    color: white;
     font-size: 21px;
     text-decoration: none;
     height: 100%;
@@ -45,7 +47,7 @@
 }
 
 .page_position a.active {
-    color: #9100ff;
+    color: white;
 }
 
 .page_position a::after {
@@ -55,7 +57,7 @@
     height: 2px;
     bottom: 0;
     left: 0;
-    background-color: #9100ff;
+    background-color: white;
     transform: scaleX(0);
     transform-origin: bottom left;
     transition: transform 0.3s ease;
@@ -68,7 +70,7 @@
 }
 
 .page_position a:hover {
-    color: #9100ff;
+    color: white;
     transition: color 0.3s ease;
 }
 
@@ -78,6 +80,86 @@
   top: 0;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  /* Дополнительные стили для изменения ширины */
-  height: 70px; /* Новая высота в "прилипшем" состоянии */
+  height: 70px;
+}
+
+
+
+
+.navbar.home{
+    backdrop-filter: blur(5px);
+    background-color: transparent;
+    position:absolute;
+}
+
+.navbar.home .logo_position {
+    display: flex;
+    align-items: center;
+}
+
+.navbar.home .logo_position img {
+    width: 220px;
+    height: auto;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.navbar.home .page_position {
+    height: 100%;
+    display: flex;
+    gap: 30px;
+    margin-left: auto;
+    margin-right: 80px;
+}
+
+.navbar.home .page_position a {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: white;
+    font-size: 21px;
+    text-decoration: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: color 0.3s ease;
+}
+
+.navbar.home .page_position a.active {
+    color: black;
+}
+
+.navbar.home .page_position a::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: black;
+    transform: scaleX(0);
+    transform-origin: bottom left;
+    transition: transform 0.3s ease;
+    box-sizing: border-box; /* Добавлено для учета padding и border в общей ширине */
+}
+
+.navbar.home .page_position a:hover::after,
+.navbar.home .page_position a.active::after {
+    transform: scaleX(1);
+}
+
+.navbar.home .page_position a:hover {
+    color: black;
+    transition: color 0.3s ease;
+}
+
+.navbar.home.sticky {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  height: 70px;
 }

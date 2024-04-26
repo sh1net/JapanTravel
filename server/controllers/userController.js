@@ -1,12 +1,14 @@
 const ApiError = require("../error/ApiError")
 require('dotenv').config()
+const uuid = require('uuid')
+const path = require('path')
 const bcrypt = require('bcrypt')
-const {User,BasketTour,Tour,Basket} = require('../models/models')
+const {User, Basket, UserBasket} = require('../models/models')
 const jwt = require('jsonwebtoken')
 
-const generateJwt = (id,email,role) =>{
+const generateJwt = (id) =>{
     return jwt.sign(
-        {id,email,role},
+        {id},
         process.env.SECRET_KEY,
         {expiresIn:'24h'}
     )
@@ -14,19 +16,24 @@ const generateJwt = (id,email,role) =>{
 
 class UserController{
     async registration(req,res,next){
-        const {email,password,role} = req.body
-        if(!email || !password){
-            return next(ApiError.badRequest('Неккоректный email или password'))
-        }
-        const candidate = await User.findOne({where:{email}})
-        if(candidate){
-            return next(ApiError.badRequest('Пользователь уже существует'))
-        }
-        const hashPassword = await bcrypt.hash(password, 5)
-        const user = await User.create({email,role,password:hashPassword})
-        const basket = await Basket.create({uesrId:user.id})
-        const token = generateJwt(user.id,user.email,user.role)
+        try{
+            const {email,password} = req.body
+            if(!email || !password){
+                return next(ApiError.badRequest('Неккоректный email или password'))
+            }
+            const candidate = await User.findOne({where:{email}})
+            if(candidate){
+                return next(ApiError.badRequest('Пользователь уже существует'))
+            }
+            const hashPassword = await bcrypt.hash(password, 5)
+            const user = await User.create({email,role:"ADMIN",password:hashPassword})
+            const basket = await UserBasket.create({userId:user.id})
+            const token = generateJwt(user.id)
             return res.json({token})
+        }
+        catch(e){
+            return next(ApiError.badRequest('Внутренняя ошибка сервера'))
+        }
     }
     async login(req,res,next){
         try{
@@ -44,91 +51,123 @@ class UserController{
             if(!isPassValid){
                 return next(ApiError.badRequest("Неверный пароль"))
             }
-            const token = generateJwt(user.id,user.email,user.role)
+            const token = generateJwt(user.id)
             return res.json({token})
         }
         catch(e){
             return next(ApiError.badRequest("Внутренняя ошибка сервера"))
         }
     }
-    async check(req,res,next){
-       const token = generateJwt(req.user.id,req.user.email,req.user.role)
-       return res.json({token})
-    }
-
-    async delete(req,res,next){
-        try{
-            const id = req.params
-            if(!id){
-                return next(ApiError.badRequest(`Не найден пользователь с id: ${id}`))
-            }
-            if(id){
-                await User.delete({where:{id}})
-                return res.json({message:'Пользователь удален'})
-            }
-        }
-        catch(e){
-            return next(ApiError.badRequest('Ошибка сервера'))
-        }
-    }
-    
-    async getAll(req,res,next){
-        try{
-            const users = await User.findAll()
-            const unHash = users.map((user)=>{
-                const{password,...unHash} = user.dataValues
-                return unHash
-            })
-            return res.json(unHash)
-        }
-        catch(e){
-            return ApiError.badRequest("Не найдены пользователи")
-        }
-    }
-
-    async AddToBasket(req,res,next){
+    async check(req, res, next) {
         try {
-            const { userId, tourId } = req.body;
-    
-            // Проверка наличия обязательных параметров в запросе
-            if (!userId || !tourId) {
-                return next(ApiError.badRequest('Не указан userId или tourId'));
+            const token = req.headers.authorization.split(' ')[1];
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const {id} = decodedToken;
+
+            const user = await User.findByPk(id);
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
             }
-    
-            // Находим пользователя и тур
-            const user = await User.findByPk(userId);
-            const tour = await Tour.findByPk(tourId);
-    
-            // Проверка существования пользователя и тура
-            if (!user || !tour) {
-                return next(ApiError.notFound('Пользователь или тур не найден'));
-            }
-    
-            // Находим корзину пользователя или создаем новую
-            let basket = await Basket.findOne({ where: { userId } });
-            if (!basket) {
-                basket = await Basket.create({ userId });
-            }
-    
-            // Создаем запись в таблице BasketTour
-            const tour_basket = await BasketTour.create({ basketId: basket.id, tourId });
-    
-            return res.json(tour_basket);
-        } catch (error) {
-            console.error(error);
-            return next(ApiError.internal('Внутренняя ошибка сервера'));
+            return res.json({token});
+        } catch (e) {
+            return next(ApiError.badRequest('Неверный токен или истек срок его действия'));
         }
     }
 
-    async userBasket(req,res,next){
+    async getUserInfo(req,res,next){
         try{
-            
+            const token = req.headers.authorization.split(' ')[1];
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const {id} = decodedToken
+            const user = await User.findByPk(id)
+            if(!user){
+                return next(ApiError.badRequest("Пользователь не найден"))
+            }
+            return res.json(user)
         }
         catch(e){
-            return next(ApiError.badRequest("Ошибка сервера"))
+            return next(ApiError.badRequest("Ошибка в коде"))
         }
     }
+
+    async delete(req, res, next) {
+        try {
+            const { id } = req.params;
+            if (!id) {
+                return next(ApiError.badRequest(`Не найден пользователь с id: ${id}`));
+            }
+            await User.destroy({ where: { id } });
+            return res.json({ message: 'Пользователь удален' });
+        } catch (e) {
+            return next(ApiError.internal('Ошибка сервера'));
+        }
+    } 
+
+    async CheckPassword(req,res,next){
+        try{
+            const {oldPassword} = req.body
+            const token = req.headers.authorization.split(' ')[1];//Нахождение user
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const { id } = decodedToken;
+            const user = await User.findOne({
+                where:{
+                    id: id
+                }
+            })
+            const isPassValid = bcrypt.compareSync(oldPassword,user.password)
+            return res.json(isPassValid)
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async UpdateUser(req, res, next) {
+        try {
+            const { nickname, email, newPassword } = req.body;
     
+            let fileName = ''; // Работа с картинкой
+            if (req.files && req.files.img) {
+                const { img } = req.files;
+                fileName = uuid.v4() + '.jpg';
+                img.mv(path.resolve(__dirname, '..', 'static', fileName));
+            }
+    
+            const token = req.headers.authorization.split(' ')[1]; // Нахождение user
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const { id } = decodedToken;
+            const user = await User.findByPk(id);
+            if (!user) {
+                return next(ApiError.notFound('Пользователь не найден'));
+            }
+    
+            if (fileName) {
+                await user.update({ img: fileName });
+            }
+    
+            if (newPassword) {
+                const hashNewPassword = await bcrypt.hash(newPassword, 5);
+                await user.update({ password: hashNewPassword });
+            }
+    
+            if (email) {
+                const email_1 = await User.findOne({ where: { email: email } });
+                if (email_1 && email_1.id != id) {
+                    return next(ApiError.badRequest('Пользователь с такой почтой уже существует'));
+                }
+                await user.update({ email });
+            }
+    
+            if (nickname) {
+                await user.update({ nickname });
+            }
+    
+            return res.json(user);
+        } catch (e) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }    
+    
+           
 }
 
 
