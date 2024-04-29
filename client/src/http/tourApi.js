@@ -40,3 +40,12 @@ export const createTours = async (name, rating, price, img) => {
     throw error;
   }
 };
+
+export const addTourToCart = async (count,date, tourId) => {
+  try{
+    const { data } = await $authHost.post('api/tour/addToCart', { count,date, tourId });
+    return data
+  }catch(e){
+    alert(e.response?.data.message || 'Произошла ошибка')
+  }
+}

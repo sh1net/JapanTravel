@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { TOURABOUT_ROUTE } from '../../utils/consts';
 import RatingStars from '../../Components/RatingStars/RatingStars'
 
-function TourCategory({ searchObject, setSearchObject }) {
+function TourCategory({ searchObject, setSearchObject, sortType }) {
     const tours = useSelector(selectTours)
     const dispatch = useDispatch()
 
@@ -16,12 +16,31 @@ function TourCategory({ searchObject, setSearchObject }) {
     const filteredTours = tours.filter(
         tour => tour.name.toLowerCase().includes(searchObject.toLowerCase())
     )
-    
+
+    let sortedTours = [...filteredTours];
+
+    switch (sortType) {
+        case 'nameUp':
+            sortedTours.sort((a, b) => b.name.localeCompare(a.name));
+            break;
+        case 'nameDown':
+            sortedTours.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+        case 'priceUp':
+            sortedTours.sort((a, b) => a.price - b.price);
+            break;
+        case 'priceDown':
+            sortedTours.sort((a, b) => b.price - a.price);
+            break;
+        default:
+            break;
+    }
+
     return (
         <div>
             <h2 style={{color:'white',marginBottom:'0px',fontSize:'40px', width:'100%',display:'flex', justifyContent:'center'}}>Достопримечательности</h2>
             <div className="grid-container">
-                {filteredTours.map(tour => (
+                {sortedTours.map(tour => (
                     <Link to={`${TOURABOUT_ROUTE}/${tour.id}`} key={tour.id} className="grid-item" style={{ backgroundImage: `url(${'http://localhost:5000/' + tour.img})` }}>
                         <div className='tour_main_info'>
                             <p className='tour_name'>{tour.name}</p>

@@ -11,6 +11,17 @@ export const fetchBasketHotel = async () => {
     }
 }
 
+export const fetchBasketTour = async () => {
+    try{
+        const {data} = await $authHost.get('api/tour/basket')
+        console.log('Api Tours : ', data)
+        return data
+    }
+    catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
 export const checkData = async (hotelId, date_in, date_out, count) => {
     try{
         const {data} = await $authHost.post('api/hotel/isDataCorrect', {hotelId, date_in, date_out, count})
@@ -42,6 +53,24 @@ export const delOneHotel = async (basket_id) => {
 export const delAllHotels = async () => {
     try{
         const {data} = await $authHost.delete('api/basket/dropHotels')
+        alert(data)
+    }catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
+export const delOneTour = async (basket_id) => {
+    try{
+        const {data} = await $authHost.delete(`api/basket/dropTour/${basket_id}`)
+        alert(data)
+    }catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
+export const delAllTours = async() => {
+    try{
+        const {data} = await $authHost.delete('api/basket/dropTours')
         alert(data)
     }catch(e){
         alert(e.response?.data.message || 'Произошла ошибка')

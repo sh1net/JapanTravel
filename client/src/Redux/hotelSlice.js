@@ -6,14 +6,12 @@ const initialState = {
     filters:{
       city:[],
       price:[],
-      
     }
 }
 
 export const fetchHotelsAsync = createAsyncThunk("hotel/fetchHotels", async () => {
   try{
     const response = await fetchHotel();
-    console.log('Redux Hotels : ', response.rows)
     return response.rows;
   }
   catch(error){

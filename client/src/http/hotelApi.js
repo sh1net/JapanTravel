@@ -3,7 +3,6 @@ import { $host, $authHost } from "./index";
 export const fetchHotel = async () => {
     try{
         const {data} = await $host.get('api/hotel')
-        console.log('Api Hotels : ', data)
         return data
     }
     catch(error){
@@ -15,7 +14,6 @@ export const fetchHotel = async () => {
 export const fetchOneHotel = async (id) =>{
     try{
       const {data} = await $host.get('api/hotel/'+id)
-      console.log(data)
       if(data){
         return data
       }

@@ -3,11 +3,20 @@ import "../Styles/Tours.css";
 import BeforeFooter from '../Components/BeforeFooter'
 import TourCategory from './Category/TourCategory';
 import HotelCategory from './Category/HotelCategory';
+import { FaFilter } from "react-icons/fa";
+import { FaSortAlphaDown } from "react-icons/fa";
+import { FaSortAlphaUp } from "react-icons/fa";
+import { FaSortNumericDown } from "react-icons/fa";
+import { FaSortNumericDownAlt } from "react-icons/fa";
+
 
 const Tours = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [searchObject,setSearchObject] = useState('');
   const [activeCategory, setActiveCategory] = useState('places');
+  const [showSortOptions, setShowSortOptions] = useState(false);
+
+  const [sortType,setSortType] = useState('')
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
@@ -16,6 +25,10 @@ const Tours = () => {
   const handleSearchChange = (e) => {
     setSearchObject(e.target.value)
   }
+
+  const toggleSortOptions = () => {
+    setShowSortOptions(!showSortOptions);
+  };
   
   return (
     <div className="tour_page_container">
@@ -31,6 +44,29 @@ const Tours = () => {
             value={searchObject}
             onChange={handleSearchChange} 
           />
+          <div className="filter-icons" onMouseEnter={toggleSortOptions} onMouseLeave={toggleSortOptions}>
+            <FaFilter style={{ color: 'white', cursor: 'pointer' }} />
+            {showSortOptions && (
+              <div className="sort-options">
+                <div className='sorted_text'>
+                  <FaSortAlphaDown className='sorted_text_text_b' onClick={()=>setSortType('nameDown')}/>
+                  <p className='sorted_text_text'>От А до Я</p>
+                </div>
+                <div className='sorted_text'>
+                  <FaSortAlphaUp className='sorted_text_text_b' onClick={()=>setSortType('nameUp')}/>
+                  <p className='sorted_text_text'>От Я до А</p>
+                </div>
+                <div className='sorted_text'>
+                  <FaSortNumericDown className='sorted_text_text_b' onClick={()=>setSortType('priceUp')}/>
+                  <p className='sorted_text_text'>Цена по возрастанию</p>
+                </div>
+                <div className='sorted_text'>
+                  <FaSortNumericDownAlt className='sorted_text_text_b' onClick={()=>setSortType('priceDown')}/>
+                  <p className='sorted_text_text'>Цена по убыванию</p>
+                </div>            
+              </div>
+            )}
+          </div>
         </div>
         <div className="category_buttons">
           <button onClick={() => setActiveCategory('places')} className='category_button'>Достопримечательности</button>
@@ -50,13 +86,13 @@ const Tours = () => {
           )}
         </div>
         {activeCategory === 'places' ?
-          <TourCategory searchObject={searchObject} setSearchObject={setSearchObject}/>
+          <TourCategory searchObject={searchObject} setSearchObject={setSearchObject} sortType={sortType}/>
           :
           <></>
         }
 
         {activeCategory === 'hotels' ?
-          <HotelCategory searchObject={searchObject} setSearchObject={setSearchObject}/>
+          <HotelCategory searchObject={searchObject} setSearchObject={setSearchObject} sortType={sortType}/>
           :
           <></>
         }
