@@ -1,7 +1,7 @@
 const ApiError = require('../error/ApiError')
 const path = require('path')
 const uuid = require('uuid')
-const { Tour, TourInfo, UserBasketTour } = require('../models/models')
+const { Tour, TourInfo, UserBasketTour, UserBasket } = require('../models/models')
 const jwt = require('jsonwebtoken')
 const {Op} = require('sequelize')
 const Sequelize = require('sequelize')
@@ -84,66 +84,133 @@ class TourController {
             const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
             const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
             const { id } = decodedToken;
-
+            const newDate = `${date.split(' ')[0]} 12:00:00`
             const tour = await TourInfo.findOne({where:{
                 tourId:tourId
-            }})
-
-            if(!tour){
-                return res.json('Тур не найден')
-            }
-
+            }})        
+            let freeCount = tour.freeCount
             const tour_main = await Tour.findOne({where:{
                 id:tourId
             }})
 
             const tourPrice = count * tour_main.price
 
-            await UserBasketTour.create({count, date, tourId, userId:id, price:tourPrice})
-            return res.json('Тур успешно добавлен в корзину')
+            //Ищем купленные туры на дату
+            const userBasket = await UserBasketTour.findAll({where:{
+                userId:id,
+                tourId:tourId,
+                status:true,
+                date: {[Op.eq] : newDate}
+            }})
+
+            //Если не нашло купленные
+            if(!userBasket || userBasket.length<1){
+                //Ищем в корзине туры
+                const userBasketTour = await UserBasketTour.findOne({where:{
+                    userId:id,
+                    tourId:tourId,
+                    status:false,
+                    date:{[Op.eq] : newDate}
+                }})
+                //Если не нашло
+                if(!userBasketTour){
+                    await UserBasketTour.create({count, date:newDate, tourId, userId:id, price:tourPrice})
+                    return res.json('Тур успешно добавлен в корзину')
+                } 
+                //Если нашло и их больше чем 1 
+                if(userBasketTour.length>1){
+                    const userBasketCount_2 = userBasketTour.reduce((acc, booking) => {
+                    acc=booking.count;
+                    return acc;
+                }, []);
+                }
+                //Если нашло но он 1
+                else{
+                    freeCount -= userBasketTour.count
+                }
+                //Если остались билеты
+                if(freeCount-parseInt(count)>=0){
+                    await userBasketTour.update({count:userBasketTour.count+parseInt(count)})   
+                    return res.json(`Количество билетов увеличено на ${count}`)
+                }
+                //Если не осталось      
+                else{
+                    return res.json('Все возможные билеты были добавлены')
+                }    
+            }
+            //Если нашло купленные
+            const userBasketCount = userBasket.reduce((acc, booking) => {
+                acc=booking.count;
+                return acc;
+            }, []);
+            freeCount -= userBasketCount
+            const userBasketTour = await UserBasketTour.findOne({where:{
+                userId:id,
+                tourId:tourId,
+                status:false,
+                date:{[Op.eq] : newDate}
+            }})
+            if(userBasketTour){
+                const userBasketCount_3 = userBasketTour.reduce((acc, booking) => {
+                    acc=booking.count;
+                    return acc;
+                }, []);
+                freeCount -= userBasketCount_3
+                if(freeCount - parseInt(count)){
+                    await userBasketTour.update({count:userBasketTour.count+parseInt(count)})   
+                    return res.json(`Количество билетов увеличено на ${count}`)
+                }
+                else{
+                    return res.json('Все возможные билеты были добавлены')
+                }
+            }else{
+                if(freeCount-parseInt(count)>=0)
+                {
+                    await UserBasketTour.create({count, date:newDate, tourId, userId:id, price:tourPrice})
+                    return res.json()
+                }
+                else{
+                    return res.json('Нет билетов на данную дату')
+                }
+                    
+            }
         }catch(e){
             return next(ApiError.badRequest(e.message))
         }
     }
 
-    async checkData (req,res,next){
+    async payTour (req,res,next){
         try{
-            const {date, tourId, count} = req.body;
-            let freeCount = 0
+            const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const { id } = decodedToken;
+            const {tourId} = req.body
 
-            const userBasket = await UserBasketTour.findAll({where:{
+            const tour = await UserBasketTour.findOne({where:{
+                userId:id,
                 tourId:tourId,
-                status:true,
-                date:{[Op.and]: [
-                    Sequelize.where(Sequelize.fn('DATE_FORMAT', Sequelize.col('date'), '%Y-%m-%d'), {
-                        [Op.eq]: date.substring(0, 10) // Получаем подстроку с датой без времени
-                    })
-                ]}
+                status:false
             }})
-            if(!userBasket && userBasket.length<0){
-                const userBasketHotel = await UserBasketTour.findAll({where:{
-                    tourId:tourId,
-                    status:false,
-                    date:{[Op.eq] : date}
-                }})
-                return res.json(userBasketHotel)
+            if(tour){
+                await tour.update({status:true})
             }
-            
-            const userBasketCount = userBasket.reduce((acc, booking) => {
-                acc+=booking.count;
-                return acc;
-              }, []);
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
+        }
+    }
 
-            const tour = await TourInfo.findOne({where:{
-                tourId:tourId
+    async toursInBasket (req,res,next){
+        try{
+            const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const { id } = decodedToken;
+
+            const tours = await UserBasketTour.findAll({where:{
+                userId:id,
+                status:false,
             }})
 
-            if(!tour){
-                return res.json('Тур не найден')
-            }
-            freeCount = tour.freeCount - userBasketCount
-            return res.json(freeCount)
-
+            return res.json(tours)
         }catch(e){
             return next(ApiError.badRequest(e.message))
         }
