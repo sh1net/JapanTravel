@@ -232,7 +232,6 @@ function User() {
       try{
         const userData = await getUserData()
         dispatch(setUser(userData));
-        
       }
       catch(error){
         console.error("Упс ошибочка")
@@ -267,7 +266,7 @@ useEffect(() => {
             <div className='block_block_block'>
               <div className='user_info'>
                 <div className='user_nickname'>
-                  <p>Имя пользователя : {user.nickname ? user.nickname : "none"}</p>
+                  <p>Имя пользователя : {user.nickname ? user.nickname : "-"}</p>
                   <hr></hr>
                 </div>
                 <div className='user_email'>
@@ -316,7 +315,7 @@ useEffect(() => {
                 </thead>
                 <tbody className='table_history_body'>
                   
-                  {basketHotels.map(item => {
+                  {basketHotels && basketHotels.length>0 && basketHotels.map(item => {
                     const hotel = hotels.find(h => h.id === item.hotelId);
                     const formattedDateIn = item.date_in ? new Date(item.date_in).toLocaleDateString('ru-RU') : '';
                     const formattedDateOut = item.date_out ? new Date(item.date_out).toLocaleDateString('ru-RU') : '';
@@ -347,7 +346,7 @@ useEffect(() => {
         <div className="modal">
           <div className="modal_content" >
             <div style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
-                <h3 style={{marginTop:'0px'}}>Изменение профиля</h3>
+                <h3 style={{marginTop:'20px'}}>Изменение профиля</h3>
                 <span className="close" onClick={closeModal}>&times;</span>
             </div>
             <div className='modal_edit'>

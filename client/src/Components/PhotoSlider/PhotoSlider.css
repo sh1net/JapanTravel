@@ -1,0 +1,45 @@
+.photo_slider_container {
+    width: 80%;
+    margin: auto;
+  }
+  
+.photo_slider_container img {
+    width: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+}
+
+.first_slider {
+    height: 500px !important; /* Установка высоты первого слайдера */
+}
+
+.first_slider img{
+  height: 500px !important; /* Установка высоты первого слайдера */
+}
+  
+.second_slider {
+    height: 150px !important; /* Установка высоты второго слайдера */
+}
+
+.second_slider img{
+  height: 150px !important; /* Установка высоты второго слайдера */
+}
+
+/* Сделать стрелки больше по размеру */
+.first_slider .slick-prev,
+.first_slider .slick-next {
+  font-size: 24px;
+}
+
+.slick-next{
+  right:-40px;
+}
+
+.slick-prev{
+  left:-50px;
+}
+
+.slick-prev:before, .slick-next:before {
+  font-size: 30px;
+  line-height: 6;
+}

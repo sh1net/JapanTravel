@@ -1,0 +1,56 @@
+.admin_page_container {
+  display: flex;
+  align-items: stretch;
+}
+  
+.admin_tab_page {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  padding: 15px;
+  font-size: 20px;
+  background-color: #575757;
+  color:white;
+}
+  
+.admin_tab_info {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: white;
+}
+
+.admin_tab_page_container{
+  display:flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.admin_add_button{
+  margin:10px 0;
+  padding:9px 15px;
+}
+
+.admin_tab_page_text {
+  margin-right: 10px;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.admin_tab_page_text {
+  margin-right: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.admin_tab_page_text:hover {
+  transform: scale(1.1);
+  color: #ffffff; /* Измените на желаемый цвет */
+  text-decoration: underline;
+}
+
+
+
+
+

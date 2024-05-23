@@ -22,15 +22,6 @@ export const fetchBasketTour = async () => {
     }
 }
 
-export const checkData = async (hotelId, date_in, date_out, count) => {
-    try{
-        const {data} = await $authHost.post('api/hotel/isDataCorrect', {hotelId, date_in, date_out, count})
-        console.log('data of check correct : ', data)
-        return data
-    }catch(e){
-        alert(e.response?.data.message || 'Произошла ошибка')
-    }
-}
 //done 1
 export const fetchHotelHistory = async () => {
     try{

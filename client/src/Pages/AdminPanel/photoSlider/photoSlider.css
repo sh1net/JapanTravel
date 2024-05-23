@@ -1,0 +1,39 @@
+.admin_photo_slider_container {
+    width: 200px;
+    margin: auto;
+  }
+  
+.admin_photo_slider_container img {
+    width: fit-content;
+    object-fit: cover;
+    object-position: 50% 50%;
+}
+
+.third_slider {
+    height: 200px !important; /* Установка высоты первого слайдера */
+}
+
+.third_slider img{
+  height: 200px !important; /* Установка высоты первого слайдера */
+}
+
+
+.third_slider .slick-prev,
+.third_slider .slick-next {
+  font-size: 24px;
+}
+
+.third_slider .slick-next{
+  right:-30px;
+}
+
+.third_slider .slick-prev{
+  left:-30px;
+}
+
+.third_slider .slick-prev:before,.third_slider .slick-next:before {
+  font-size: 20px;
+  line-height: 1;
+  color:black;
+}
+

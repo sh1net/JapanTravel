@@ -9,8 +9,8 @@ export const registration = async (email, password) => {
 export const login = async (email, password) => {
     const { data } = await $host.post('api/user/login', { email, password });
     localStorage.setItem('token',data.token)
-    console.log(data.token)
-    return jwtDecode(data.token);
+    localStorage.setItem('role',data.role)
+    return ({token:jwtDecode(data.token),role:data.role});
 } 
 
 export const check = async () => {
@@ -42,7 +42,14 @@ export const updateUser = async (updatedUser) => {
     }
 }
 
-
+export const getUserReviews = async () => {
+    try{
+        const {data} = await $authHost.get('/api/user/userReviews')
+        console.log('Отзывы user: ',data)
+    }catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}
 
 export const getUserData = async () =>{
     try{
@@ -65,5 +72,6 @@ export const getUserData = async () =>{
 
 export const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role')
 }
   

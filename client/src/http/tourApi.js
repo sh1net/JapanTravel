@@ -24,26 +24,48 @@ export const fetchOneTour = async (id) =>{
   }
 }
 
-export const createTours = async (name, rating, price, img) => {
-  try {
-    const { data } = await $authHost.post('api/tour', {
-      name,
-      rating,
-      price,
-      img,
-    });
-    console.log('Созданный тур : ', data);
-    return data;
-  } 
-  catch (error) {
-    console.error("Error creating tours:", error);
-    throw error;
-  }
-};
-
-export const addTourToCart = async (count,date, tourId) => {
+export const checkValidableData = async (date, tourId) => {
   try{
-    const { data } = await $authHost.post('api/tour/addToCart', { count,date, tourId });
+    const {data} = await $authHost.post('api/tour/isDataCorrect', {date, tourId})
+    return data
+  }catch(e){
+    console.log(e.response?.data.message || 'Произошла ошибка')
+  }
+}
+
+export const addTourToCart = async (tourCount,date, tourId, price) => {
+  try{
+    const { data } = await $authHost.post('api/tour/addToCart', {tourCount,date, tourId, price});
+    return data
+  }catch(e){
+    alert(e.response?.data.message || 'Произошла ошибка')
+  }
+}
+
+export const getTourReviews = async (tourId) => {
+  try{
+    const {data} = await $host.get('api/user/tourReviews/'+tourId)
+    return data
+  }catch(e){
+    console.log(e.response?.data.message || 'Произошла ошибка')
+  }
+}
+
+export const createReview = async (description,rate,tourId) => {
+  try{
+    const {data} = await $authHost.post('api/user/review',{description,rate,tourId})
+    if(data){
+      const id = tourId
+      await $host.patch('/api/tour/reviews',{id})
+    }
+  }catch(e){
+    alert(e.response?.data.message || 'Произошла ошибка')
+  }
+}
+
+export const payBasketTour = async (tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help) => {
+  try{
+    const {data} = await $authHost.patch('/api/tour/payTour', {tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help})
     return data
   }catch(e){
     alert(e.response?.data.message || 'Произошла ошибка')

@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import "./Styles/App.css";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import AppRouter from "./Components/AppRouter";
 import { useDispatch } from "react-redux";
-import { setIsAuth, setUser } from "./Redux/authSlice";
+import { setIsAuth, setUser, setUserRole } from "./Redux/authSlice";
 import { css } from '@emotion/react';
 import { RingLoader } from 'react-spinners';
 import { check } from "./http/userApi";
 
 function App() {
     const [loading, setLoading] = useState(true);
-    const dispatch = useDispatch();
+    const dispatch = useDispatch();   
 
     function YourComponent() {
         const override = css`
@@ -30,11 +30,13 @@ function App() {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
         setTimeout(() => {
             if (token) {
                 check().then(data => {
                     dispatch(setIsAuth(true));
                     dispatch(setUser(data));
+                    dispatch(setUserRole(role));
                 }).finally(() => setLoading(false));
             } else {
                 dispatch(setIsAuth(false));
@@ -49,11 +51,22 @@ function App() {
 
     return (
         <BrowserRouter>
-            <Navbar/>
-            <AppRouter/>
-            <Footer/>
+            <MainContent/>
         </BrowserRouter>
     );
+}
+
+function MainContent() {
+    const location = useLocation()
+    const hideFooterRoutes = ['/admin']
+    const hideFooter = hideFooterRoutes.includes(location.pathname.toLowerCase());
+    return(
+        <>
+            <Navbar/>
+            <AppRouter/>
+            {!hideFooter && <Footer />}
+        </>
+    )
 }
 
 export default App;

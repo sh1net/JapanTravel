@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import "../Styles/Tours.css";
 import BeforeFooter from '../Components/BeforeFooter'
-import TourCategory from './Category/TourCategory';
-import HotelCategory from './Category/HotelCategory';
-import { FaFilter } from "react-icons/fa";
-import { FaSortAlphaDown } from "react-icons/fa";
-import { FaSortAlphaUp } from "react-icons/fa";
-import { FaSortNumericDown } from "react-icons/fa";
-import { FaSortNumericDownAlt } from "react-icons/fa";
+// import { FaFilter } from "react-icons/fa";
+// import { FaSortAlphaDown } from "react-icons/fa";
+// import { FaSortAlphaUp } from "react-icons/fa";
+// import { FaSortNumericDown } from "react-icons/fa";
+// import { FaSortNumericDownAlt } from "react-icons/fa";
+import { FaFilter, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericDownAlt } from "react-icons/fa";
+import Category from './Category';
+import { fetchToursAsync, selectTours } from '../Redux/tourSlice';
+import { fetchHotelsAsync, selectHotels } from '../Redux/hotelSlice';
+import { fetchCombToursAsync, selectCombTours } from '../Redux/combSlice';
+import { TOURABOUT_ROUTE, HOTELABOUT_ROUTE, COMBTOURABOUT_ROUTE } from '../utils/consts';
 
 
 const Tours = () => {
@@ -85,17 +89,51 @@ const Tours = () => {
             </div>
           )}
         </div>
-        {activeCategory === 'places' ?
-          <TourCategory searchObject={searchObject} setSearchObject={setSearchObject} sortType={sortType}/>
-          :
-          <></>
-        }
-
-        {activeCategory === 'hotels' ?
-          <HotelCategory searchObject={searchObject} setSearchObject={setSearchObject} sortType={sortType}/>
-          :
-          <></>
-        }
+        {activeCategory === 'places' && (
+          <Category
+            fetchAction={fetchToursAsync}
+            selectData={selectTours}
+            route={TOURABOUT_ROUTE}
+            searchObject={searchObject}
+            sortType={sortType}
+            title="Достопримечательности"
+            getName={item => item.name}
+            getImage={item => item.img[0]}
+            getCity={item => `г.${item.city}`}
+            getPrice={item => item.price}
+            getRating={item => item.rating}
+          />
+        )}
+        {activeCategory === 'hotels' && (
+          <Category
+            fetchAction={fetchHotelsAsync}
+            selectData={selectHotels}
+            route={HOTELABOUT_ROUTE}
+            searchObject={searchObject}
+            sortType={sortType}
+            title="Отели"
+            getName={item => item.name}
+            getImage={item => item.img[0]}
+            getCity={item => item.city}
+            getPrice={item => item.price}
+            getRating={item => item.rating}
+          />
+        )}
+        {activeCategory === 'tours' && (
+          <Category
+            fetchAction={fetchCombToursAsync}
+            selectData={selectCombTours}
+            route={COMBTOURABOUT_ROUTE}
+            searchObject={searchObject}
+            sortType={sortType}
+            title="Туры"
+            getName={item => item.hotel.name}
+            getImage={item => item.hotel.img[0]}
+            getCity={item => item.hotel.city}
+            getPrice={item => item.hotel.price}
+            getRating={item => item.rating}
+          />
+        )}
       </div>
       <BeforeFooter/>
     </div>

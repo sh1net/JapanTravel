@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { HOTELABOUT_ROUTE, TOURABOUT_ROUTE } from '../utils/consts';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchHotelsAsync, selectHotels } from '../Redux/hotelSlice';
-import { BuyOneHotel } from '../http/hotelApi';
 import { fetchToursAsync, selectTours } from '../Redux/tourSlice';
+import BasketModal from './PaymentModals/BasketModal';
 
 function Basket() {
   const [basketHotel, setBasketHotel] = useState([]);
@@ -14,6 +14,9 @@ function Basket() {
   const [basketPlace, setBasketPlace] = useState([])
 
   const [basketTour,setBasketTour] = useState([])
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalContent, setModalContent] = useState({ type: '', item: null, basket:null });
 
   const dispatch = useDispatch()
   const hotels = useSelector(selectHotels)
@@ -38,11 +41,6 @@ function Basket() {
     fetchData();
   }, []);
 
-  const Payment = async (id) => {
-    await BuyOneHotel(id)
-    window.location.reload();
-  }
-
   const dellAllHotels = async () => {
     await delAllHotels()
     window.location.reload();
@@ -63,6 +61,16 @@ function Basket() {
     window.location.reload();
   }
 
+  const openModal = (type, item, basket) => {
+    setModalContent({ type, item, basket });
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setModalContent({ type: '', item: null, basket:null });
+  }
+
   return (
     <div className='basket_page_container'>
       {basketHotel && basketHotel.length>0
@@ -77,7 +85,7 @@ function Basket() {
           return (
             <div key={item.id} className='hotels_container'>
               <div className='link_dates_container'>
-                <Link to={`${HOTELABOUT_ROUTE}/${item.hotelId}`} style={{ backgroundImage: `url(${'http://localhost:5000/' + hotel.img})` }} className='basket_hotel_redirect'>
+                <Link to={`${HOTELABOUT_ROUTE}/${item.hotelId}`} style={{ backgroundImage: `url(${'http://localhost:5000/' + hotel.img[0]})` }} className='basket_hotel_redirect'>
                 </Link>
                 <div>
                   <p style={{fontSize:'20px'}}>Отель : {hotel.name}</p>
@@ -91,7 +99,7 @@ function Basket() {
                 <button style={{marginLeft:'0'}} onClick={()=> dellOneHotel(item.id)}>Удалить</button>
                 <div className='payment_block'>
                   <p className='pay_p'>{hotel.price}</p>
-                  <button key={item.id} onClick={() => Payment(item.id)}>Оплатить</button>
+                  <button key={item.id}>Оплатить</button>
                 </div>
               </div> 
               <hr></hr>
@@ -113,20 +121,22 @@ function Basket() {
       return (
         <div key={item.id} className='hotels_container'>
           <div className='link_dates_container'>
-            <Link to={`${TOURABOUT_ROUTE}/${item.tourId}`} style={{ backgroundImage: `url(${'http://localhost:5000/' + tour.img})` }} className='basket_hotel_redirect'>
+            <Link to={`${TOURABOUT_ROUTE}/${item.tourId}`} style={{ backgroundImage: `url(${'http://localhost:5000/' + tour.img[0]})` }} className='basket_hotel_redirect'>
             </Link>
             <div>
               <p style={{fontSize:'20px'}}>Название : {tour.name}</p>
               <p style={{fontSize:'20px'}}>г.{tour.city}</p>
               <p style={{fontSize:'20px'}}>Дата посещения : {new Date(item.date).toLocaleDateString('ru-RU')}</p>
-              <p style={{fontSize:'20px'}}>Количество билетов : {item.count}</p>
+              <p style={{fontSize:'20px'}}>Количество билетов:{item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)}
+                {item.count[1]>0 ? ` Взрослые: ${item.count[0]}, Детские: ${item.count[1]}`:` Взрослые: ${item.count[0]}`}
+              </p>
             </div>
           </div>              
           <div className='buttons_handlers_container'>
             <button style={{marginLeft:'0'}} onClick={()=> dellOneTour(item.id)}>Удалить</button>
             <div className='payment_block'>
-              <p className='pay_p'>{tour.price}</p>
-              <button key={item.id}>Оплатить</button>
+              <p className='pay_p'>{item.price}</p>
+              <button key={item.id} onClick={() => openModal('tour',tour,item)}>Оплатить</button>
             </div>
           </div> 
           <hr></hr>
@@ -147,6 +157,13 @@ function Basket() {
         <>
         </>
       }
+      <BasketModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        type={modalContent.type}
+        item={modalContent.item}
+        basket={modalContent.basket}
+      />
     </div>
   );
 }

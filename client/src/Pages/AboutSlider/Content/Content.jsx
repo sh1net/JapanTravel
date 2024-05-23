@@ -11,33 +11,33 @@ import "./Content.css"
 export default function Content(){
   const sliderData = [
     {
-        label: 'CEO AND COFOUNDER, ARKETA',
-        title: 'Rachel Lea Fishman',
+        label: 'photo',
+        title: 'Япония',
         img: photo_1
       },
       {
-        label: 'CEO AND CO-FOUNDER, FORMA',
-        title: 'Jason Fan',
+        label: 'photo',
+        title: 'это',
         img: photo_2
       },
       {
-        label: 'CEO, OPENAI',
-        title: 'Sam Altman',
+        label: 'photo',
+        title: 'страна',
         img: photo_3
       },
       {
-        label: 'SVP OF PRODUCT, JOBBER',
-        title: 'Jeff Sheclock',
+        label: 'photo',
+        title: 'с самой',
         img: photo_4
       },
       {
-        label: 'HEAD OF STRATEGY, SARDINE',
-        title: 'Simon Taylor',
+        label: 'photo',
+        title: 'необычной',
         img: photo_5
       },
       {
-        label: 'HEAD OF GLOBAL SALES, STRIPE',
-        title: `Eileen O'Mara`,
+        label: 'photo',
+        title: `культурой`,
         img: photo_6
       },
 ]

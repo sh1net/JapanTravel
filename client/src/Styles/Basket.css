@@ -23,6 +23,8 @@
 .basket_hotel_redirect{
     width:400px;
     height:250px;
+    background-position: center;
+    background-size: cover;
 }
 
 .buttons_handlers_container{

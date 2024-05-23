@@ -3,10 +3,6 @@ import { fetchHotel, fetchOneHotel } from "../http/hotelApi";
 
 const initialState = {
     hotels: [],
-    filters:{
-      city:[],
-      price:[],
-    }
 }
 
 export const fetchHotelsAsync = createAsyncThunk("hotel/fetchHotels", async () => {

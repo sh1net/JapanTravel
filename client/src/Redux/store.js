@@ -3,6 +3,7 @@ import authReducer from './authSlice';
 import tourReducer from './tourSlice';
 import hotelReducer from './hotelSlice'
 import basketReducer from './basketSlice'
+import combTourReducer from './combSlice'
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     tour: tourReducer,
     hotel: hotelReducer,
     basket: basketReducer,
+    combTour: combTourReducer,
   },
 });
 

@@ -4,15 +4,175 @@
 }
 
 .tour_about_container_container{
-    padding:20px;
+    padding:20px 140px;
 }
 
 .tour_about_price{
     font-size: 30px;
-    margin: 50px 10px;
 }
 
 .tour_about_info{
-    margin: 50px 10px;
-    font-size: 20px;
+    margin: 20px 10px;
+    font-size: 27px;
+    text-align: justify;
+}
+
+.tour_about_button{
+    margin:0;
+}
+
+.photo_block_text_container{
+    display:flex;
+    flex-direction: row;
+    width:100%;
+}
+
+.tour_about_img{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    height:100%;
+    width:70%;
+}
+
+.text_block_container{
+    display:flex;
+    flex-direction: column;
+    background-color: rgb(73, 73, 73);
+    padding:25px;
+    border-radius:15px;
+    width:30%;
+    justify-content: space-between;
+}
+
+.tour_name_h{
+    margin:0 0 5px 5px;
+}
+
+.rate_stars_info{
+    margin: 10px 0;
+}
+
+.city_block_text{
+    margin:0;
+    font-size:30px;
+}
+
+.price_container{
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tour_about_price{
+    font-size: 40px;
+    margin:0;
+}
+
+.valute_text{
+    margin:0;
+}
+
+.valute_tour_about{
+    display:flex;
+    flex-direction: row;
+    align-items: baseline;
+    margin:0;
+}
+
+.tour_reviews_container{
+    width:100%;
+    height:fit-content;
+    padding:10px;
+}
+
+.reviews_container{
+    background-color: white;
+    padding:20px;
+    border-radius: 20px;
+    margin-top: 30px;
+    display:flex;
+    flex-direction: column;
+    gap:10px;
+}
+
+.send_delete_container{
+    display:flex;
+    justify-content: space-between;
+}
+
+.review_button{
+  cursor: pointer;
+  color:rgb(114, 114, 114);
+  border: 2px solid rgb(114, 114, 114);
+  border-radius: 10px;
+  width:fit-content;
+  margin: 0;
+  padding:10px;
+}
+
+.review_button:hover {
+    border-color: black;
+    background-color: white;
+    color:black;
+}
+
+.review_button.send:hover{
+    border-color:green;
+    color:green;
+}
+
+.review_button.delete:hover{
+    border-color:red;
+    color:red;
+}
+
+.review_item{
+}
+
+.p_review{
+    color:black;
+    font-size:18px;
+    padding:0;
+    margin:0;
+}
+
+.p_username_review{
+    color:black;
+    font-size: 25px;
+}
+
+.review_user_info{
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.user_icon_review{
+    width:50px;
+    height:50px; 
+    border-radius:50px;  
+    background-color: black;
+    margin-right: 10px;
+    background-size: cover;
+    background-position: 50%;
+}
+
+.text_field_review{
+    border-color: black;
+}
+
+.tour_about_services_container{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    width: 100%;
+    margin:50px;
+}
+
+.tour_about_children_container{
+    display:flex;
+    flex-direction: row;
+    align-items: baseline;
 }

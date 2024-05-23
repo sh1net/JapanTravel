@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import "../Styles/Authorization.css";
 import {LOGIN_ROUTE, REGISTRATION_ROUTE} from "../utils/consts"
 import { registration, login } from "../http/userApi"
-import { setIsAuth, setUser } from '../Redux/authSlice';
+import { setIsAuth, setUser, setUserRole } from '../Redux/authSlice';
 import { useDispatch } from 'react-redux';
 
 function Authorization() {
@@ -14,22 +14,37 @@ function Authorization() {
   const [password,setPassword] = useState('')
   const dispatch = useDispatch()
 
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  const validateEmail = (email) => {
+    return emailPattern.test(email)
+  }
+
   const click = async () => {
     try{
       let data
       if(isLogin){
         data = await login(email,password)
         dispatch(setIsAuth(true))
-        dispatch(setUser(data))
-        navigate('/')
+        dispatch(setUser(data.token))
+        dispatch(setUserRole(data.role))
+        if(data.role==='User'){
+          navigate('/')
+        }else if(data.role==='Admin'){
+          navigate('/Admin')
+        }
       }
       else{
-        data = await registration(email,password)
-        navigate(LOGIN_ROUTE)
+        if(validateEmail(email)){
+          data = await registration(email,password)
+          navigate(LOGIN_ROUTE)
+        }else{
+          alert('Неверный формат почты')
+        }        
       }
     }
     catch(e){
-      alert(e.response?.data.message || 'Произошла ошибка');
+      alert(e.response?.data.message || e.message);
     }
   }
 
@@ -45,8 +60,10 @@ function Authorization() {
         <input 
           placeholder="Введите" 
           className="reg_input"
+          type='email'
           value={email}
           onChange={e=>setEmail(e.target.value)}
+          required
         />
         <p className="reg_text">Введите пароль</p>
         <input 

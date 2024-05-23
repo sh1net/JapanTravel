@@ -1,6 +1,5 @@
 import AboutUs from "../Pages/AboutUs"
 import Basket from "../Pages/Basket"
-import Admin from "../Pages/Admin"
 import Contacts from "../Pages/Contacts"
 import Main from "../Pages/Main/Main"
 import Authorization from "../Pages/Authorization"
@@ -9,7 +8,7 @@ import User from "../Pages/User"
 import TourAbout from "../Pages/TourAbout"
 import HotelAbout from "../Pages/HotelAbout"
 
-import { ADMIN_ROUTE } from "../utils/consts"
+import { COMBTOURABOUT_ROUTE } from "../utils/consts"
 import { BASKET_ROUTE } from "../utils/consts"
 import { CONTACTS_ROUTE } from "../utils/consts"
 import { MAIN_ROUTE } from "../utils/consts"
@@ -20,12 +19,9 @@ import { TOURABOUT_ROUTE } from "../utils/consts"
 import { REGISTRATION_ROUTE } from "../utils/consts"
 import { LOGIN_ROUTE } from "../utils/consts"
 import { HOTELABOUT_ROUTE } from "../utils/consts"
+import ComboTourAbout from "../Pages/ComboTourAbout"
 
 export const authRoutes = [
-    {
-        path: ADMIN_ROUTE,
-        element: <Admin/>
-    },
     {
         path: BASKET_ROUTE,
         element: <Basket/>,
@@ -72,5 +68,9 @@ export const publicRoutes = [
     {
         path: HOTELABOUT_ROUTE +'/:id',
         element: <HotelAbout/>
+    },
+    {
+        path: COMBTOURABOUT_ROUTE+'/:id',
+        element: <ComboTourAbout/>
     }
 ]

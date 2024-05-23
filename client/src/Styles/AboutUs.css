@@ -5,7 +5,43 @@
 }
 
 .about_persons{
-    padding:25px;
+    padding-top:15px;
+    padding-bottom:0;
     display:flex;
     justify-content: center;
+}
+
+.about_details_container{
+    display:flex;
+    width:100%;
+    justify-content: space-around;
+    background-color: white;
+    align-items: center;
+    overflow: hidden;
+}
+
+.about_details_img{
+    height:700px;
+    opacity:0;
+    transform: translateY(50px);
+    transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+
+.about_details_info{
+    height:fit-content;
+    font-size: 33px;
+    color:black;
+    opacity:0;
+    transform: translateY(50px);
+    transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+
+.about_details_info.visible{
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.about_details_img.visible{
+    opacity: 1;
+    transform: translateY(0);
 }

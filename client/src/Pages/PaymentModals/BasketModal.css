@@ -1,0 +1,101 @@
+.basketModal_container{
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(15px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.basketModal_content{
+    font-size: 30px;
+    background-color:rgb(255, 255, 255);
+    color:black;
+    width:600px;
+    height:70%;
+    display:flex;
+    flex-direction: column;
+    border-radius: 25px;
+    padding:0px 25px 25px 25px;
+    border:2px solid black;   
+}
+
+.basketModal_title{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.basketClose_button{
+    color:black;
+    cursor:pointer;
+}
+
+.basketClose_button:hover{
+    color:red;
+}
+
+.basketModal_anket_container{
+    display:flex;
+    flex-direction: row;
+    justify-content: space-around;
+    border: 2px solid black;
+    border-radius: 20px;
+    margin-top:0;
+    margin-bottom: 30px;
+    padding:10px;
+}
+
+.basketModal_dop_uslugi{
+    display:flex;
+    flex-direction: column;
+    border: 2px solid black;
+    border-radius: 20px;
+    padding:20px;
+}
+
+.basketModal_uslugi_picker{
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.basketModal_uslugi_text{
+    padding:0;
+    margin:0;
+}
+
+.basketModal_payment_container{
+    display:flex;
+    flex-direction: column;
+    border: 2px solid black;
+    border-radius: 20px;
+    padding:10px;
+}
+
+.basketModal_dop_info{
+    display:flex;
+    flex-direction: row;
+}
+
+.basketModal_button{
+    background-color:rgb(77, 77, 77);
+    color:white;
+    padding:10px 20px;
+    font-size: 17px;
+}
+
+.basketModal_button:hover{
+    background-color:grey;
+    color:white
+}
+
+.basketModal_button.disabled{
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.basketModal_button.disabled:hover {
+    background-color: #ccc;
+}

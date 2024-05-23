@@ -64,8 +64,6 @@
     border: 1px solid black;
     padding: 10px;
     border-radius: 5px;
-    margin-top: 20px;
-    margin-right: 20px;
     background-color: white;
 }  
 
@@ -74,36 +72,53 @@
 }
   
 .grid-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 100px;
-    margin-top: 20px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
     width: 100%;
-    margin-left: auto;
-    margin-right: auto;
+    margin:50px;
 }
 
 .grid-item img{
-    width: 101%;
-    height: 101%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    object-position: center -1px;
+    object-position: center;
 }
 
 .grid-item {
     border: 3px solid white;
     border-radius: 20px;
-    margin: 25px;
     min-height: 400px;
+    width:300px;
     display:flex;
     align-items: flex-end;
     color:white;
+    transition: transform 0.5s ease, z-index 0.5s ease;
+    position: relative;
+}
+
+.grid-item:hover {
+    transform: scale(1.1);
+    z-index: 1;
 }
 
 .tour_main_info {
     background-color: rgb(43, 43, 43, 0.5);
     border-radius: 15px;
     width:100%;
+    box-sizing: border-box;
+    transition: background-color 0.5s ease;
+}
+
+.tour_details {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.grid-item:hover .tour_details {
+    display: block;
+    opacity: 1;
 }
 
 
@@ -114,7 +129,7 @@ a{
 
 .tour_name{
     font-size:40px;
-    margin:0;
+    margin: 10px 15px;
 }
 
 .tour_price{
@@ -125,13 +140,14 @@ a{
 .price_button_tour{
     display:flex;
     flex-direction: row;
-    align-items: center;
+    align-items: baseline;
     padding:10px;
     justify-content: space-between;
 }
   
 .tour_rating{
     font-size: 25px;
+    margin:0;
 }
 
 .sort-options {
@@ -163,4 +179,13 @@ a{
     margin:0px 5px 0px 0px;
     font-size: 18px;
     cursor:pointer;
+}
+
+.page_container{
+    display:flex;
+    width:100%;
+    font-size: 26px;
+    color:white;
+    justify-content: center;
+    margin:20px;
 }
