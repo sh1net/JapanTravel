@@ -85,7 +85,7 @@ class BasketController {
             const { id } = decodedToken;
 
             const tours = await UserBasketTour.findAll({where:{
-                userId,
+                userId:id,
                 status:true
             }})
             return res.json(tours)
