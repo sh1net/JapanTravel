@@ -24,7 +24,12 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
     const validateCardNumber = (number) => /^(4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|9112[0-9]{12})$/.test(number);
     const validateExpiryDate = (date) => /^(0[1-9]|1[0-2])\/?([2-9][0-9])$/.test(date) && checkExpiryDate(date);
     const validatePhoneNumber = (number) => /^\+375(25|29|33|44)\d{7}$/.test(number);
-    const validatePassportNumber = (number) => /^[1-6][0-9]{6}[А-ЯЁ]{1}[0-9]{3}(РВ|ВА|BI)[0-9]$/.test(number);
+    const validatePassportNumber = (number) => /^[1-6][0-9]{6}[A-Z][0-9]{3}(РВ|ВА|BI)[0-9]$/.test(number);
+
+    const isValidPassport = validatePassportNumber('1234567A123РВ1');
+    console.log(isValidPassport); // Ожидаемый результат: true
+
+
 
     const checkExpiryDate = (date) => {
         const [month, year] = date.split('/');
