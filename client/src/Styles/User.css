@@ -240,12 +240,11 @@ p{
 
 .history_page_container{
   display:flex;
-  justify-content: center;
   margin:60px;
   height:fit-content;
   max-height: 440px;
-  overflow-y: auto;
-  overflow-x: auto;
+  width:900px;
+  overflow-x: scroll;
   padding:0;
 }
 
@@ -254,6 +253,7 @@ p{
   text-align: left;
   color: black;
   border-collapse: collapse;
+  width: 100%;
 }
 
 .head_history{
@@ -265,9 +265,11 @@ p{
   padding: 15px 20px;
   background-color: rgb(87, 87, 87);
   color:white;
+  white-space: nowrap;
 }
 
 .body_history_p{
   padding: 15px 20px;
   background-color: rgb(226, 226, 226);
+  white-space: nowrap;
 }

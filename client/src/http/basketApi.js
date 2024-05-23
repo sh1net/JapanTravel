@@ -26,9 +26,20 @@ export const fetchBasketTour = async () => {
 export const fetchHotelHistory = async () => {
     try{
         const {data} = await $authHost.get('api/basket/hHistory')
+        console.log(data)
         return data
     }catch(e){
-        alert(e.response?.data.message || 'Произошла ошибка')
+        console.log(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
+export const fetchTourHistory = async () => {
+    try{
+        const {data} = await $authHost.get('api/basket/tHistory')
+        console.log(data)
+        return data
+    }catch(e){
+        console.log(e.response?.data.message || 'Произошла ошибка')
     }
 }
 //done all

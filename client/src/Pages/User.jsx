@@ -12,7 +12,8 @@ import { FaHistory } from "react-icons/fa";
 import { RxExit } from "react-icons/rx";
 import "../Styles/User.css"
 import { fetchHotelsAsync, selectHotels } from '../Redux/hotelSlice';
-import {  fetchHotelsHistoryAsync, selectBasketHotels } from '../Redux/basketSlice';
+import {fetchToursAsync, selectTours} from '../Redux/tourSlice'
+import {  fetchHotelsHistoryAsync, fetchToursHistoryAsync, selectBasketHotels, selectBasketTours } from '../Redux/basketSlice';
 
 function User() {
   const dispatch = useDispatch();
@@ -47,6 +48,10 @@ function User() {
   const hotels = useSelector(selectHotels)
 
   const basketHotels = useSelector(selectBasketHotels);
+
+  const tours = useSelector(selectTours)
+
+  const basketTours = useSelector(selectBasketTours)
 
   const checkPass = async () => {
     try{
@@ -242,10 +247,12 @@ function User() {
 
   useEffect(() => {
     dispatch(fetchHotelsHistoryAsync());
+    dispatch(fetchToursHistoryAsync())
 }, [dispatch]);
 
 useEffect(() => {
   dispatch(fetchHotelsAsync());
+  dispatch(fetchToursAsync())
 }, [dispatch]);
 
   return (
@@ -301,7 +308,9 @@ useEffect(() => {
         }
         {tabPage === 2
         ? <div>
-            <h1 style={{color:'white'}}>История покупок</h1>
+            {basketHotels && basketHotels.length>0 && (
+              <>
+              <h1 style={{color:'white'}}>История покупок Отелей</h1>
             <div className='history_page_container'>
               <table className='table_history'>
                 <thead className='head_history'>
@@ -311,6 +320,12 @@ useEffect(() => {
                     <th className='head_history_p'>Число</th>
                     <th className='head_history_p'>Стоимость</th>
                     <th className='head_history_p'>Комнаты</th>
+                    <th className='head_history_p'>ФИО</th>
+                    <th className='head_history_p'>Телефон</th>
+                    <th className='head_history_p'>Паспорт</th>
+                    <th className='head_history_p'>Такси</th>
+                    <th className='head_history_p'>Гид</th>
+                    <th className='head_history_p'>Помощник</th>
                   </tr>
                 </thead>
                 <tbody className='table_history_body'>
@@ -320,14 +335,19 @@ useEffect(() => {
                     const formattedDateIn = item.date_in ? new Date(item.date_in).toLocaleDateString('ru-RU') : '';
                     const formattedDateOut = item.date_out ? new Date(item.date_out).toLocaleDateString('ru-RU') : '';
                     const formattedDateRange = formattedDateIn && formattedDateOut ? `${formattedDateIn} - ${formattedDateOut}` : '';
-                    console.log()
                     return(
                       <tr key={item.id} className='table_row_history'>
-                        <td className='body_history_p'>{hotel.name}</td>
+                        <td className='body_history_p'>{hotel ? hotel.name : 'не определено'}</td>
                         <td className='body_history_p'>{formattedDateRange}</td>
-                        <td className='body_history_p'>{item.count}</td>
+                        <td className='body_history_p'>{item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)}</td>
                         <td className='body_history_p'>{item.price}</td>
-                        <td className='body_history_p'>{item.rooms.join(',')}</td>
+                        <td className='body_history_p'>{Array.isArray(item.rooms)? item.rooms.join(','):item.rooms}</td>
+                        <td className='body_history_p'>{item.fullName}</td>
+                        <td className='body_history_p'>{item.phoneNumber}</td>
+                        <td className='body_history_p'>{item.pasportNumber}</td>
+                        <td className='body_history_p'>{item.taxi}</td>
+                        <td className='body_history_p'>{item.guide}</td>
+                        <td className='body_history_p'>{item.helper}</td>
                       </tr>
                     )
                   })}
@@ -335,7 +355,53 @@ useEffect(() => {
                 
               </table>
               
-            </div>
+            </div></>
+            )}
+            {basketTours && basketTours.length>0 && (
+              <>
+              <h1 style={{color:'white'}}>История покупок Туров</h1>
+            <div className='history_page_container'>
+              <table className='table_history'>
+                <thead className='head_history'>
+                  <tr className='table_row_history'>
+                    <th className='head_history_p'>Тур</th>
+                    <th className='head_history_p'>Дата</th>
+                    <th className='head_history_p'>Число</th>
+                    <th className='head_history_p'>Стоимость</th>
+                    <th className='head_history_p'>ФИО</th>
+                    <th className='head_history_p'>Телефон</th>
+                    <th className='head_history_p'>Паспорт</th>
+                    <th className='head_history_p'>Такси</th>
+                    <th className='head_history_p'>Гид</th>
+                    <th className='head_history_p'>Помощник</th>
+                  </tr>
+                </thead>
+                <tbody className='table_history_body'>
+                  
+                  {basketTours && basketTours.length>0 && basketTours.map(item_2 => {
+                    const tour = tours.find(t => t.id === item_2.tourId);
+                    const formattedDate = item_2.date ? new Date(item_2.date).toLocaleDateString('ru-RU') : '';
+                    return(
+                      <tr key={item_2.id} className='table_row_history'>
+                        <td className='body_history_p'>{tour ? tour.name : 'не определено'}</td>
+                        <td className='body_history_p'>{formattedDate}</td>
+                        <td className='body_history_p'>{item_2.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)}</td>
+                        <td className='body_history_p'>{item_2.price}</td>
+                        <td className='body_history_p'>{item_2.fullName}</td>
+                        <td className='body_history_p'>{item_2.phoneNumber}</td>
+                        <td className='body_history_p'>{item_2.pasportNumber}</td>
+                        <td className='body_history_p'>{item_2.taxi}</td>
+                        <td className='body_history_p'>{item_2.guide}</td>
+                        <td className='body_history_p'>{item_2.helper}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                
+              </table>
+              
+            </div></>
+            )}
           </div>
         :<></>
         }
