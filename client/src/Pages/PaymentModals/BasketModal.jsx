@@ -5,6 +5,9 @@ import { alpha, styled } from '@mui/material/styles';
 import { grey } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import { payBasketTour } from '../../http/tourApi';
+import { FaRegQuestionCircle } from "react-icons/fa";
+import { BuyOneHotel } from '../../http/hotelApi';
+import { payBasketCombo } from '../../http/combApi';
 
 function BasketModal({ isOpen, onClose,type, item, basket }) {
 
@@ -24,19 +27,15 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
     const validateCardNumber = (number) => /^(4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|9112[0-9]{12})$/.test(number);
     const validateExpiryDate = (date) => /^(0[1-9]|1[0-2])\/?([2-9][0-9])$/.test(date) && checkExpiryDate(date);
     const validatePhoneNumber = (number) => /^\+375(25|29|33|44)\d{7}$/.test(number);
-    const validatePassportNumber = (number) => /^[1-6][0-9]{6}[A-Z][0-9]{3}(РВ|ВА|BI)[0-9]$/.test(number);
+    const validatePassportNumber = (number) => /^[1-6][0-9]{6}[A-Z][0-9]{3}(PB|BA|AI)[0-9]$/.test(number);
 
-    const isValidPassport = validatePassportNumber('1234567A123РВ1');
-    console.log(isValidPassport); // Ожидаемый результат: true
-
-
+    const isValidPassport = validatePassportNumber('1234567A123PB1');
 
     const checkExpiryDate = (date) => {
         const [month, year] = date.split('/');
         const now = new Date();
         const currentYear = now.getFullYear() % 100;
         const currentMonth = now.getMonth() + 1;
-
         return (parseInt(year, 10) > currentYear) || 
                (parseInt(year, 10) === currentYear && parseInt(month, 10) >= currentMonth);
     }
@@ -146,13 +145,37 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
 
     const toggleShowObject = (object) => {
         if(object === 'taxi'){
-            setShowTaxi(!showTaxi)
+            if(!showTaxi){
+                setTaxi('')
+                setTaxiError(false)
+                setShowTaxi(true)
+            }else{
+                setTaxi('')
+                setTaxiError(false)
+                setShowTaxi(false)
+            }
         }
         if(object === 'guide'){
-            setShowGuide(!showGuide)
+            if(!showGuide){
+                setGuide('')
+                setGuideError(false)
+                setShowGuide(true)
+            }else{
+                setGuide('')
+                setGuideError(false)
+                setShowGuide(false)
+            }
         }
         if(object === 'helper'){
-            setShowHelper(!showHelper)
+            if(!showHelper){
+                setShowHelper(false)
+                setHelper('')
+                setShowHelper(true)
+            }else{
+                setShowHelper(false)
+                setHelper('')
+                setHelperError(false)
+            }
         }
       };
     
@@ -183,12 +206,40 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
         }if(!CVC || CVC.length < 3 || CVC.length > 4){
             setCVCError(true)
             hasError = true;
+        }if(showTaxi && taxi===''){
+            setTaxiError(true)
+            hasError = true;
+        }if(showGuide && guide===''){
+            setGuideError(true)
+            hasError = true;
+        }if(showHelper && helper===''){
+            setHelperError(true)
+            hasError = true;
         }if(!hasError){
             return hasError
         }else{
             return true
         }
     }
+
+    const [price, setPrice] = useState(basket?.price || 0);
+
+    useEffect(() => {
+        let initialPrice = basket?.price || 0;
+        
+        if (showTaxi) {
+            initialPrice += 25;
+        }
+        if (showGuide) {
+            initialPrice += 25;
+        }
+        if (showHelper) {
+            initialPrice += 25;
+        }
+        
+        // Setting the computed price
+        setPrice(initialPrice);
+    }, [showTaxi, showGuide, showHelper, basket?.price]);
     
     const payTour = async () => {
         try{
@@ -197,7 +248,21 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
                 return
             }else if(type==='tour'){
                 const fullName = [firstName,fName,lastName]
-                const data = await payBasketTour(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper)
+                const data = await payBasketTour(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price)
+                if(data){
+                    alert(data)
+                    window.location.reload()
+                }
+            }else if(type==='hotel'){
+                const fullName = [firstName,fName,lastName]
+                const data = await BuyOneHotel(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price)
+                if(data){
+                    alert(data)
+                    window.location.reload()
+                }
+            }else if(type === 'combo'){
+                const fullName = [firstName,fName,lastName]
+                const data = await payBasketCombo(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price)
                 if(data){
                     alert(data)
                     window.location.reload()
@@ -207,6 +272,8 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
             console.log('Ошибка запроса')
         }
     }
+
+    const [isTooltipVisible, setIsTooltipVisible] = useState(false);
     
     if (!isOpen) {
         return null;
@@ -220,9 +287,26 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
           <p className='basketClose_button' onClick={onClose}>&times;</p>
         </div>
         <div style={{padding:'0 20px 0 0',overflowY:'auto', margin:'0'}}>
-            <p>Название: {item.name}</p>
-            <p>Город: {item.city}</p>
-            <p>Цена: {basket.price}</p>
+            {type === 'combo' ? 
+                <>
+                    <p>Отель: {item.hotel.name}</p>
+                    <p>Город: {item.hotel.city}</p>
+                    <p>Цена: {basket.price}</p>
+                    {item.tours.map((tour,index) => {
+                        return(
+                            <p key={index}>Место: {tour.name}</p>
+                        )
+                    })
+
+                    }
+                </>
+            :
+                <>
+                    <p>Название: {item.name}</p>
+                    <p>Город: {item.city}</p>
+                    <p>Цена: {basket.price}</p>
+                </>
+            }
             <h3>Заполните анкету</h3>
             <h4 style={{marginBottom:'0'}}>Личные данные</h4>
             <div className='basketModal_anket_container'>
@@ -242,32 +326,51 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
                         <CustomTextField onSend={handlePhoneNumber} error={phoneNumberError} helperText={helperText} header='Номер телефона' value={phoneNumber} type={'text'}/>
                     </div>
                     <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handlePasportNumber} error={pasportNumberError} helperText={helperText} header='Номер паспорта' value={pasportNumber} type={'text'}/>
+                        <CustomTextField onSend={handlePasportNumber} error={pasportNumberError} helperText={helperText} header='Идентификационный номер паспорта' value={pasportNumber} type={'text'}/>
                     </div>
+                    <p className='paspNum_primer'>Пример номера паспорта: 5010104A001РВ1</p>
                 </div>
             </div>
-            <h4>Дополнительные услуги</h4>
+            <div className='dop_uslugi_container_question'>
+                <h4>Дополнительные услуги</h4>
+                <FaRegQuestionCircle 
+                    onMouseEnter={() => setIsTooltipVisible(true)}
+                    onMouseLeave={()=> setIsTooltipVisible(false)}
+                    className='question_button'
+                />
+                {isTooltipVisible && (
+                    <div className="tooltip">
+                        <p className='question_text'>Выберите услугу, в поле напишите текст. Вас встретят с табличкой и текстом, который вы написали. Стоимость каждой услуги(25byn)</p>
+                    </div>
+                )}
+            </div>
             <div className='basketModal_dop_uslugi'>
                 <div className='basketModal_uslugi_picker'>
                     <p className='basketModal_uslugi_text'>Такси</p>
                     <PinkSwitch checked={showTaxi} onChange={()=>toggleShowObject('taxi')} />
-                    <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleTaxi} error={taxiError} helperText={helperText} header='Сообщение такси' value={taxi} type={'text'}/>
-                    </div>
+                    {showTaxi && (
+                        <div style={{margin:'10px 18px'}}>
+                            <CustomTextField onSend={handleTaxi} error={taxiError} helperText={helperText} header='Сообщение такси' value={taxi} type={'text'}/>
+                        </div>
+                    )}
                 </div>
                 <div className='basketModal_uslugi_picker'>
                     <p className='basketModal_uslugi_text'>Гид</p>
                     <PinkSwitch checked={showGuide} onChange={()=>toggleShowObject('guide')}/>
-                    <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleGuide} error={guideError} helperText={helperText} header='Сообщение гида' value={guide} type={'text'}/>
-                    </div>
+                    {showGuide && (
+                        <div style={{margin:'10px 18px'}}>
+                            <CustomTextField onSend={handleGuide} error={guideError} helperText={helperText} header='Сообщение гида' value={guide} type={'text'}/>
+                        </div>
+                    )}
                 </div>
                 <div className='basketModal_uslugi_picker'>
                     <p className='basketModal_uslugi_text'>Помощник</p>
                     <PinkSwitch checked={showHelper} onChange={()=>toggleShowObject('helper')}/>
-                    <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleHelper} error={helperError} helperText={helperText} header='Сообщение помощника' value={helper} type={'text'}/>
-                    </div>
+                    {showHelper && (
+                        <div style={{margin:'10px 18px'}}>
+                            <CustomTextField onSend={handleHelper} error={helperError} helperText={helperText} header='Сообщение помощника' value={helper} type={'text'}/>
+                        </div>
+                    )}
                 </div>
             </div>
             <h4 style={{marginBottom:'0'}}>Данные карты</h4>
@@ -286,6 +389,7 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
                     </div>
                 </div>
             </div>
+            <h3>К оплате {price>basket.price ? price : basket.price }</h3>
             <button className={`basketModal_button ${!isFormValid ? 'disabled' : ''}`} disabled={!isFormValid} onClick={() => payTour()}>Оплатить</button>
         </div>
       </div>

@@ -5,8 +5,8 @@ import "../Styles/BeforeFooter.css"
 function BeforeFooter() {
   return (
     <div className='before_footer_container'>
-        Are u want to became a sigma?
-        <NavLink to="/Contacts" className='toContact'>Join</NavLink>
+        Есть какие-то вопросы?
+        <NavLink to="/Contacts" className='toContact'>Напишите нам</NavLink>
     </div>
   )
 }

@@ -1,16 +1,16 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchHotelHistory, fetchTourHistory } from "../http/basketApi";
+import { fetchComboHistory, fetchHotelHistory, fetchTourHistory } from "../http/basketApi";
 
 const initialState = {
   basketHotels: [],
   basketTours: [],
+  basketCombo: []
 };
 
 // Создание асинхронного действия для получения истории отелей
 export const fetchHotelsHistoryAsync = createAsyncThunk("basket/fetchHotels", async () => {
   try {
     const response = await fetchHotelHistory();
-    console.log('Redux Basket Hotels:', response);
     return response;
   } catch (error) {
     console.error("Error fetching hotel history", error);
@@ -22,10 +22,20 @@ export const fetchHotelsHistoryAsync = createAsyncThunk("basket/fetchHotels", as
 export const fetchToursHistoryAsync = createAsyncThunk("basket/fetchTours", async () => {
   try {
     const response = await fetchTourHistory();
-    console.log('Redux Basket Tours:', response);
     return response;
   } catch (error) {
     console.error("Error fetching tour history", error);
+    throw error;
+  }
+});
+
+export const fetchComboHistoryAsync = createAsyncThunk("basket/fetchCombo", async () => {
+  try {
+    const response = await fetchComboHistory();
+    console.log('Redux Basket Combo:', response);
+    return response;
+  } catch (error) {
+    console.error("Error fetching combo history", error);
     throw error;
   }
 });
@@ -41,9 +51,13 @@ const basketSlice = createSlice({
     builder.addCase(fetchToursHistoryAsync.fulfilled, (state, action) => {
       state.basketTours = action.payload; // Обновляем туры напрямую
     });
+    builder.addCase(fetchComboHistoryAsync.fulfilled, (state,action) => {
+      state.basketCombo = action.payload
+    })
   },
 });
 
 export const selectBasketHotels = (state) => state.basket.basketHotels;
 export const selectBasketTours = (state) => state.basket.basketTours;
+export const selectBasketCombo = (state) => state.basket.basketCombo
 export default basketSlice.reducer;

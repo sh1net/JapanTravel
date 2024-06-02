@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { addHotelToCart, createHotelReview, fetchHotelReviews, fetchOneHotel } from '../http/hotelApi';
 import BeforeFooter from '../Components/BeforeFooter';
@@ -20,7 +20,7 @@ function HotelAbout() {
   const { id } = useParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hotel, setHotel] = useState();
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(1);
   const [dateRange, setDateRange] = useState([null, null]);
   const [isCor, setIsCor] = useState({});
   const [selectedNumbers,setSelectedNumbers] = useState([])
@@ -81,6 +81,18 @@ function HotelAbout() {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen]);
+
   const closeModal = () => {
     setIsModalOpen(false);
     setDateRange([null, null]);
@@ -96,54 +108,93 @@ function HotelAbout() {
   };
 
 
-  const addCount = () => {
-    if(count && count<isCor.count - kidsCount){
-      setCount(count + 1);
-    }else{
-      setCount(1)
+  const intervalRef = useRef(null);
+  const delay = 2000;
+  const interval = 100;
+
+  const addCount = useCallback(() => {
+    setCount((prevCount) => {
+      if (isCor && prevCount < isCor.count - kidsCount) {
+        return prevCount + 1;
+      }
+      return prevCount;
+    });
+  }, [isCor?.count, kidsCount]);
+
+  const minusCount = useCallback(() => {
+    setCount((prevCount) => {
+      if (prevCount > 1) {
+        return prevCount - 1;
+      }
+      return prevCount;
+    });
+  }, []);
+
+  const handleMouseDown = (action) => {
+    if (action === 'add') {
+      addCount();
+      intervalRef.current = setInterval(addCount, interval);
+    } else if (action === 'minus') {
+      minusCount();
+      intervalRef.current = setInterval(minusCount, interval);
     }
-    
   };
 
-  const minusCount = () => {
-    if (count && count > 1) {
-      setCount(count - 1);
-    }
+  const handleMouseUp = () => {
+    clearInterval(intervalRef.current);
   };
 
-  const addKidsCount = () => {
-    if (kidsCount < isCor.count - count) {
-      setKidsCount(kidsCount + 1);
-    }else{
-      setKidsCount(0)
-    }
+  const handleMouseLeave = () => {
+    clearInterval(intervalRef.current);
   };
 
-  const minusKidsCount = () => {
-    if (kidsCount > 0) {
-      setKidsCount(kidsCount - 1);
+  const addKidsCount = useCallback(() => {
+    setKidsCount((prevCount) => {
+      if (isCor && prevCount < isCor.count - count) {
+        return prevCount + 1;
+      }
+      return prevCount;
+    });
+  }, [isCor?.count, count]);
+
+  const minusKidsCount = useCallback(() => {
+    setKidsCount((prevCount) => {
+      if (prevCount > 1) {
+        return prevCount - 1;
+      }
+      return prevCount;
+    });
+  }, []);
+
+  const handleKidsMouseDown = (action) => {
+    if (action === 'add') {
+      addKidsCount();
+      intervalRef.current = setInterval(addKidsCount, interval);
+    } else if (action === 'minus') {
+      minusKidsCount();
+      intervalRef.current = setInterval(minusKidsCount, interval);
     }
+  };
+  
+  const handleKidsMouseUp = () => {
+    clearInterval(intervalRef.current);
+  };
+  
+  const handleKidsMouseLeave = () => {
+    clearInterval(intervalRef.current);
   };
 
   const handleCountChange = (e) => {
     const value = parseInt(e.target.value)
-    if(!isNaN(value) && value <= isCor.count - kidsCount){
+    if(value<=isCor.count-kidsCount){
       setCount(value)
-    }else if(value>isCor.count - kidsCount){
-      setCount(isCor.count - kidsCount)
-    }else{
-      setCount(1)
     }
   }
 
   const handleKidsCountChange = (e) => {
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value <= isCor.count - count) {
-      setKidsCount(value);
-    } else if (value > isCor.count - count) {
-      setKidsCount(isCor.count - count);
-    } else {
-      setKidsCount(0);
+    if(value<=isCor.count-count){
+      setKidsCount(value)
     }
   }
 
@@ -165,22 +216,19 @@ function HotelAbout() {
   const addToCart = async () => {
     try {
       if (formattedDateRange && count && selectedNumbers && kidsCount) {
-        if ((count+kidsCount) === selectedNumbers.length) {
+        if (selectedNumbers.reduce((sum,current) => {
+          return sum+current[1]
+        },0) === (count + kidsCount)) {
           const dates = formattedDateRange.split(' - ')
           const dateIn = ConvertDates(dates[0])
           const dateOut = ConvertDates(dates[1])
-          const rooms = selectedNumbers.join(',')
           const hotelCount = [count,kidsCount].join(',')
-          const data = await addHotelToCart(id, dateIn, dateOut, rooms, hotelCount,price)
+          const data = await addHotelToCart(id, dateIn, dateOut, selectedNumbers, hotelCount,price)
           if(data){
             alert('Успешно')
             closeModal()
           }
-        } else {
-          alert('Ошибка в выборе номеров')
         }
-      } else {
-        alert('Введите данные')
       }
     } catch (e) {
       alert(e.response?.data.message || 'Произошла ошибка');
@@ -218,7 +266,6 @@ function HotelAbout() {
       if(reviewText!==undefined && reviewText.length>0 && reviewText!==''){
         console.log(valid,error,helperText, reviewText)
         await createHotelReview(reviewText,reviewRate,id)
-        alert('Спасибо за ваш отзыв')
         window.location.reload()
       }else{
         setError(true)
@@ -292,7 +339,12 @@ function HotelAbout() {
                       )}
                       <p className='p_username_review'>{review.user.nickname}</p>
                     </div>
-                    <Rating name="read-only" value={review.rate} size="large" readOnly />
+                    <div style={{display:'flex',flexDirection:'row', justifyContent:'space-between'}}>
+                      <Rating name="read-only" value={review.rate} size="large" readOnly />
+                      {review.createdAt && (
+                        <p className='p_review'>{new Date(review.createdAt).toLocaleDateString('ru-RU')}</p>
+                      )}
+                    </div>
                     {review.description && <p className='p_review'>{review.description}</p>}
                     <hr></hr>
                   </div>))
@@ -329,9 +381,25 @@ function HotelAbout() {
                 <div className='modal_count'>
                   <p className='modal_p'>Билеты</p>
                   <div className='modal_count_edit'>
-                    <FaMinus className='modal_plus_minus' onClick={minusCount}/>
+                    <FaMinus 
+                      className='modal_plus_minus' 
+                      onMouseDown={() => handleMouseDown('minus')}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseLeave}
+                      onTouchStart={() => handleMouseDown('minus')}
+                      onTouchEnd={handleMouseUp}
+                      onTouchCancel={handleMouseLeave}
+                    />
                     <input type='number' value={count} onChange={handleCountChange} className='modal_count_count'></input>
-                    <FaPlus className='modal_plus_minus' onClick={addCount}/>
+                    <FaPlus
+                      className='modal_plus_minus'
+                      onMouseDown={() => handleMouseDown('add')}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseLeave}
+                      onTouchStart={() => handleMouseDown('add')}
+                      onTouchEnd={handleMouseUp}
+                      onTouchCancel={handleMouseLeave} 
+                    />
                   </div>
                 </div>
                 <div className='tour_about_children_container'>
@@ -342,9 +410,23 @@ function HotelAbout() {
                     <div className='modal_count'>
                       <p className='modal_p'>Дети</p>
                       <div className='modal_count_edit'>
-                        <FaMinus className='modal_plus_minus' onClick={minusKidsCount} />
+                        <FaMinus className='modal_plus_minus'
+                          onMouseDown={() => handleKidsMouseDown('minus')}
+                          onMouseUp={handleKidsMouseUp}
+                          onMouseLeave={handleKidsMouseLeave}
+                          onTouchStart={() => handleKidsMouseDown('minus')}
+                          onTouchEnd={handleKidsMouseUp}
+                          onTouchCancel={handleKidsMouseLeave} 
+                        />
                         <input type='number' value={kidsCount} onChange={handleKidsCountChange} className='modal_count_count' />
-                        <FaPlus className='modal_plus_minus' onClick={addKidsCount} />
+                        <FaPlus className='modal_plus_minus'
+                          onMouseDown={() => handleKidsMouseDown('add')}
+                          onMouseUp={handleKidsMouseUp}
+                          onMouseLeave={handleKidsMouseLeave}
+                          onTouchStart={() => handleKidsMouseDown('add')}
+                          onTouchEnd={handleKidsMouseUp}
+                          onTouchCancel={handleKidsMouseLeave}
+                        />
                       </div>
                     </div>
                   )}
@@ -358,7 +440,9 @@ function HotelAbout() {
                             isCor.isOk ? (
                               <>
                                 <HotelNumberPicker selectedNumbers={selectedNumbers} onSelect={handleNumberSelect} rooms={isCor.rooms} count={count}/>
-                                {(selectedNumbers && selectedNumbers.length === (count + kidsCount)) && (
+                                {(selectedNumbers && selectedNumbers.reduce((sum,current) => {
+                                  return sum+current[1]
+                                },0) === (count + kidsCount)) && (
                                   <>
                                     <div style={{display:'flex', flexDirection:'row', alignItems:'center',justifyContent:'space-between'}}>
                                       <p style={{margin:'0'}}>Стоимость : {price>0?price : hotel.price}</p>

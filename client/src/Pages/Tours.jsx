@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "../Styles/Tours.css";
 import BeforeFooter from '../Components/BeforeFooter'
-// import { FaFilter } from "react-icons/fa";
-// import { FaSortAlphaDown } from "react-icons/fa";
-// import { FaSortAlphaUp } from "react-icons/fa";
-// import { FaSortNumericDown } from "react-icons/fa";
-// import { FaSortNumericDownAlt } from "react-icons/fa";
 import { FaFilter, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericDownAlt } from "react-icons/fa";
 import Category from './Category';
 import { fetchToursAsync, selectTours } from '../Redux/tourSlice';
 import { fetchHotelsAsync, selectHotels } from '../Redux/hotelSlice';
 import { fetchCombToursAsync, selectCombTours } from '../Redux/combSlice';
 import { TOURABOUT_ROUTE, HOTELABOUT_ROUTE, COMBTOURABOUT_ROUTE } from '../utils/consts';
+import { useDispatch, useSelector } from 'react-redux';
 
 
 const Tours = () => {
@@ -19,6 +15,14 @@ const Tours = () => {
   const [searchObject,setSearchObject] = useState('');
   const [activeCategory, setActiveCategory] = useState('places');
   const [showSortOptions, setShowSortOptions] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCombToursAsync());
+    dispatch(fetchHotelsAsync());
+    dispatch(fetchToursAsync());
+  }, [dispatch]);
+
 
   const [sortType,setSortType] = useState('')
 
@@ -33,6 +37,8 @@ const Tours = () => {
   const toggleSortOptions = () => {
     setShowSortOptions(!showSortOptions);
   };
+  
+  
   
   return (
     <div className="tour_page_container">
@@ -77,18 +83,7 @@ const Tours = () => {
           <button onClick={() => setActiveCategory('hotels')} className='category_button'>Отели</button>
           <button onClick={() => setActiveCategory('tours')} className='category_button'>Туры</button>
         </div>
-        <div className='filter_tours_container'>
-          {showFilters && (
-            <div className="filters_panel">
-              <p>Город</p>
-              <p>Отель</p>
-              <p>Стоимость</p>
-              <p>Рейтинг</p>
-              <p>Отсавшиеся билеты на дату</p>
-              <p>Промежуточная дата</p>
-            </div>
-          )}
-        </div>
+        <div className='items_filters_main_container'>
         {activeCategory === 'places' && (
           <Category
             fetchAction={fetchToursAsync}
@@ -96,12 +91,13 @@ const Tours = () => {
             route={TOURABOUT_ROUTE}
             searchObject={searchObject}
             sortType={sortType}
+            filters={showFilters}
             title="Достопримечательности"
             getName={item => item.name}
             getImage={item => item.img[0]}
-            getCity={item => `г.${item.city}`}
+            getCity={item => item.city}
             getPrice={item => item.price}
-            getRating={item => item.rating}
+            getRating={item => item.rating?item.rating : 0}
           />
         )}
         {activeCategory === 'hotels' && (
@@ -111,12 +107,13 @@ const Tours = () => {
             route={HOTELABOUT_ROUTE}
             searchObject={searchObject}
             sortType={sortType}
+            filters={showFilters}
             title="Отели"
             getName={item => item.name}
             getImage={item => item.img[0]}
             getCity={item => item.city}
             getPrice={item => item.price}
-            getRating={item => item.rating}
+            getRating={item => item.rating?item.rating : 0}
           />
         )}
         {activeCategory === 'tours' && (
@@ -126,14 +123,16 @@ const Tours = () => {
             route={COMBTOURABOUT_ROUTE}
             searchObject={searchObject}
             sortType={sortType}
+            filters={showFilters}
             title="Туры"
             getName={item => item.hotel.name}
             getImage={item => item.hotel.img[0]}
             getCity={item => item.hotel.city}
             getPrice={item => item.hotel.price}
-            getRating={item => item.rating}
+            getRating={item => item.rating?item.rating : 0}
           />
         )}
+      </div>
       </div>
       <BeforeFooter/>
     </div>

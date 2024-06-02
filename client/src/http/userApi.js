@@ -45,7 +45,7 @@ export const updateUser = async (updatedUser) => {
 export const getUserReviews = async () => {
     try{
         const {data} = await $authHost.get('/api/user/userReviews')
-        console.log('Отзывы user: ',data)
+        return data
     }catch(e){
         alert(e.response?.data.message || 'Произошла ошибка')
     }

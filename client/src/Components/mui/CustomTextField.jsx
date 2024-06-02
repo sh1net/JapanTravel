@@ -1,9 +1,8 @@
 import React from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
-import { IMaskInput } from 'react-imask';
 
-const theme = createTheme({
+const blackTheme = createTheme({
   components: {
     MuiTextField: {
       styleOverrides: {
@@ -39,8 +38,55 @@ const theme = createTheme({
   },
 });
 
+const whiteTheme = createTheme({
+  components: {
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: '#666666', // по умолчанию цвет рамки
+            },
+            '& input': {
+              color: '#666666', // цвет текста по умолчанию
+            },
+          },
+          '& .MuiInputLabel-root': {
+            color: '#666666', // цвет лейбла по умолчанию
+          },
+          '& .MuiOutlinedInput-root': {
+            '&.Mui-focused fieldset': {
+              borderColor: 'white',
+            },
+            '&:hover fieldset': {
+              borderColor: 'white',
+            },
+          },
+          '& input': {
+            color: 'white',
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: 'white',
+          },
+          '& input[type=number]': {
+            MozAppearance: 'textfield', // исправлено
+            '&::-webkit-outer-spin-button': {
+              WebkitAppearance: 'none', // исправлено
+              margin: 0,
+            },
+            '&::-webkit-inner-spin-button': {
+              WebkitAppearance: 'none', // исправлено
+              margin: 0,
+            },
+          },
+        },
+      },
+    },
+  },
+});
 
-function CustomTextField({onSend, error, helperText, header, value, isMulti, type}) {
+
+function CustomTextField({onSend, error, helperText, header, value, isMulti, type, color}) {
 
   const handleChange = (e) => {
     onSend(e.target.value)
@@ -51,7 +97,7 @@ function CustomTextField({onSend, error, helperText, header, value, isMulti, typ
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={color === 'white' ? whiteTheme : blackTheme}>
       <TextField
         id="outlined-basic"
         label={header}

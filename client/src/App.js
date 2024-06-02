@@ -22,7 +22,7 @@ function App() {
         `;
 
         return (
-            <div>
+            <div style={{display:"flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100dvh"}}>
                 <RingLoader color={'#9100ff'} loading={true} css={override} size={70} />
             </div>
         );
@@ -59,13 +59,18 @@ function App() {
 function MainContent() {
     const location = useLocation()
     const hideFooterRoutes = ['/admin']
+    const mainRoute = ['/']
     const hideFooter = hideFooterRoutes.includes(location.pathname.toLowerCase());
+    const unStyleNavbar = mainRoute.includes(location.pathname.toLowerCase())
+
     return(
-        <>
+        <div className="all_content">
             <Navbar/>
-            <AppRouter/>
+            <div className={unStyleNavbar ? '' : "main_content"}>
+                <AppRouter/>
+            </div>
             {!hideFooter && <Footer />}
-        </>
+        </div>
     )
 }
 

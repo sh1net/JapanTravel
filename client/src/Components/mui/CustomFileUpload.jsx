@@ -25,7 +25,7 @@ export default function CustomFileUpload({onChange}) {
       variant="contained"
       tabIndex={-1}
     >
-      Выберите файл
+      Выберите изображение
       <VisuallyHiddenInput type="file" onChange={handleFileChange}/>
     </Button>
   );

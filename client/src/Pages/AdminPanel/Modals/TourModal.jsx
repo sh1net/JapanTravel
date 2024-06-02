@@ -3,9 +3,9 @@ import CustomTextField from '../../../Components/mui/CustomTextField'
 import CustomFileUpload from '../../../Components/mui/CustomFileUpload'
 import CheckMapLocation from '../../../Components/GoogleMaps/CheckMapLocation'
 import '../Styles/AdminModal.css'
-import { createTours } from '../../../http/adminApi'
+import { createTours, update } from '../../../http/adminApi'
 
-function TourModal({closeModal, isEdit, tour}) {
+function TourModal({closeModal, isEdit, tour, info}) {
 
     const [tourNameError,setTourNameError] = useState(false)
     const [tourCityError,setTourCityError] = useState(false)
@@ -18,18 +18,19 @@ function TourModal({closeModal, isEdit, tour}) {
     const [imageFile, setImageFile] = useState([]);
     const [newImageFile, setNewImageFile] = useState([])
     const [oldImageFile,setOldImageFile] = useState('')
+    console.log(tour)
 
     useEffect(() => {
-        if (isEdit && tour) {
+        if (isEdit && tour && info) {
           setTourName(tour.name);
           setTourCity(tour.city);
           setTourPrice(tour.price);
-          setTourInfo(tour.info);
+          setTourInfo(info.info[0].description);
           setTourLocationLat(tour.location[0]);
           setTourLocationLng(tour.location[1]);
           setOldImageFile(tour.img);
         }
-    }, [isEdit, tour]);
+    }, [isEdit, tour, info]);
     
     const [tourName, setTourName] = useState('')
     const handleTourName = (text) => {
@@ -55,8 +56,8 @@ function TourModal({closeModal, isEdit, tour}) {
         setHelperText(false)
         setTourInfo(text)
     }
-    const [tourLocationLat,setTourLocationLat] =useState()
-    const [tourLocationLng,setTourLocationLng] =useState()
+    const [tourLocationLat,setTourLocationLat] =useState('')
+    const [tourLocationLng,setTourLocationLng] =useState('')
     const handleTourLocation_lat = (text) => {
         setTourLocationLatError(false)
         setHelperText(false)
@@ -110,6 +111,12 @@ function TourModal({closeModal, isEdit, tour}) {
         setNewImageFile(updatedImages)
     }
 
+    const handleClearOld = (index) => {
+        const updatedImages = [...oldImageFile]
+        updatedImages.splice(index,1)
+        setOldImageFile(updatedImages)
+    }
+
     const createTour = async () => {
         try{
             const isError = checkError()
@@ -129,6 +136,36 @@ function TourModal({closeModal, isEdit, tour}) {
                 const coordinatesString = coordinates.join(',');
                 formData.append('coordinates', coordinatesString);
                 const data = await createTours(formData)
+                if(data){
+                    alert('Успешно')
+                    window.location.reload()
+                }
+            }
+        }catch(e){
+            console.log('Ошибка запроса')
+        }
+    }
+
+    const updateTour = async () => {
+        try{
+            const isError = checkError()
+            if(isError){
+                return
+            }
+            if(!isError){
+                const formData = new FormData()
+                formData.append('id',tour.id)
+                formData.append('name', tourName);
+                formData.append('info', tourInfo);
+                formData.append('city', tourCity);
+                formData.append('price', tourPrice);
+                formData.append('oldImgs', oldImageFile)
+                imageFile.forEach(file => {
+                    formData.append('img', file);
+                });   
+                const   coordinates = [tourLocationLat,tourLocationLng]                 
+                formData.append('coordinates', coordinates);
+                const data = await update(formData)
                 if(data){
                     alert('Успешно')
                     window.location.reload()
@@ -161,7 +198,7 @@ function TourModal({closeModal, isEdit, tour}) {
                     </div>
                 </div>
                 <div style={{margin:'10px 18px'}}>
-                    <CheckMapLocation/>
+                    <CheckMapLocation location={[tourLocationLat,tourLocationLng]} name={tourName}/>
                 </div>
             </div> 
             <div className='admin_lat_lng_setter'>
@@ -205,10 +242,10 @@ function TourModal({closeModal, isEdit, tour}) {
                     </div>
                 </div>
                 <div style={{margin:'10px 18px'}}>
-                    <CheckMapLocation/>
+                    <CheckMapLocation location={[tourLocationLat,tourLocationLng]} name={tourName}/>
                 </div>
             </div> 
-            <div className='admin_lat_lng_setter'>
+            <div className='admin_lat_lng_setter' style={{margin:'10px 18px'}}>
                 <CustomTextField onSend={handleTourLocation_lat} error={tourLocationLatError} helperText={helperText} header='Широта' value={tourLocationLat} type={'number'}/>
                 <CustomTextField onSend={handleTourLocation_lng} error={tourLocationLngError} helperText={helperText} header='Долгота' value={tourLocationLng} type={'number'}/>
             </div>
@@ -222,6 +259,7 @@ function TourModal({closeModal, isEdit, tour}) {
                 {oldImageFile.length>0 && oldImageFile.map((image,index) => (
                     <div className='admin_photo_control_container' key={index}>
                         <img key={index} src={`http://localhost:5000/${image}`} alt={`${index}`} className='admin_tooks_imgs'/>
+                        <p className='admin_photo_cancel' onClick={()=>handleClearOld(index)}>&times;</p>
                     </div>
                 ))}
                 {newImageFile.length > 0 && newImageFile.map((image, index) => (
@@ -231,7 +269,7 @@ function TourModal({closeModal, isEdit, tour}) {
                     </div>
                 ))}
             </div>          
-            <button className='admin_modal_accept'>Изменить</button>
+            <button className='admin_modal_accept' onClick={updateTour}>Изменить</button>
             </div>
         </div>
         }

@@ -5,6 +5,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index:10000;
 }
 
 .basketModal_content{
@@ -98,4 +99,44 @@
 
 .basketModal_button.disabled:hover {
     background-color: #ccc;
+}
+
+.dop_uslugi_container_question {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    position: relative; /* Добавлено для корректного позиционирования tooltip */
+}
+
+.question_button {
+    position: relative; /* Добавлено для корректного позиционирования tooltip */
+    cursor: pointer; /* Добавляем указатель при наведении */
+}
+
+.tooltip {
+    background-color: rgb(192, 192, 192);
+    color: black;
+    position: absolute;
+    top: 70%;
+    left: 40%;
+    font-size: 25px;
+    padding:10px;
+    text-align: justify;
+    z-index: 10000;
+}
+
+.question_text{
+    margin:0;
+    padding:0;
+}
+
+.question_button:hover {
+    color: grey; /* Изменение цвета значка при наведении */
+}
+
+.paspNum_primer{
+    color:grey;
+    font-size: 20px;
+    margin: 0 0 0 20px;
 }

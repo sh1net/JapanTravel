@@ -1,22 +1,19 @@
 .modal{
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color:transparent;
-    width: 100%;
+    inset: 0;
     backdrop-filter: blur(15px);
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 10000;
 }
 
 .modal_content{
     font-size: 30px;
     background-color:rgb(43, 43, 43);
     color:white;
-    width:600px;
-    height:fit-content;
+    width:630px;
+    height:70%;
     display:flex;
     flex-direction: column;
     border-radius: 25px;
@@ -97,3 +94,7 @@
     color: rgb(170, 170, 170);
 }
 
+.modal_form{
+    overflow-y: auto;
+    padding:0 25px 0 0;
+}

@@ -7,3 +7,16 @@ body{
 input[type=number] {
     -moz-appearance:textfield;
 }
+
+.all_content{
+    display:flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.main_content{
+    display:flex;
+    flex:1;
+    flex-direction: column;
+    padding-top: 100px;
+}

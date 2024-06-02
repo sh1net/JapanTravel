@@ -9,6 +9,7 @@ import { deleteTour } from '../../../http/adminApi';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import TourModal from '../Modals/TourModal';
+import { fetchOneTour } from '../../../http/tourApi';
 
 function TourController() {
 
@@ -17,9 +18,27 @@ function TourController() {
   const [isTourModalOpen,setIsTourModalOpen]= useState(false)
   const [tour,setTour] = useState()
 
+  const [tour_info,setTour_info] = useState()
+
   useEffect(() => {
       dispatch(fetchToursAsync());
   }, [dispatch]);
+
+  useEffect(() => {
+    const fetchTourData = async () => {
+      try {
+        let result
+        if(tour && tour.id){
+          result = await fetchOneTour(tour.id);
+        }
+        setTour_info(result);
+      } catch (error) {
+        console.error('Ошибка получения данных:', error);
+      }
+    };
+  
+    fetchTourData();
+  }, [tour?.id]);
 
   const closeModal = () => {
     setIsTourModalOpen(false);
@@ -99,7 +118,7 @@ function TourController() {
         </table>
       </div>
       {isTourModalOpen && 
-        <TourModal closeModal={closeModal} isEdit={true} tour={tour}/>
+        <TourModal closeModal={closeModal} isEdit={true} tour={tour} info={tour_info}/>
       }
     </div>
   )

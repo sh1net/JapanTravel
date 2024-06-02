@@ -9,7 +9,7 @@ import { deleteTour } from '../../../http/adminApi';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
-function UserController() {
+function ComboController() {
 
   const tours = useSelector(selectTours)
   const dispatch = useDispatch()
@@ -87,4 +87,4 @@ function UserController() {
   )
 }
 
-export default UserController
+export default ComboController

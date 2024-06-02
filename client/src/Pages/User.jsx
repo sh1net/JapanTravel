@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectUser, setIsAuth, setUser } from '../Redux/authSlice';
+import { getAllUserReviews, selectUser, selectUserReviews, setIsAuth, setUser } from '../Redux/authSlice';
 import { checkPassword, getUserData, logout, updateUser } from '../http/userApi';
 import HeaderImage from "../Components/HeaderImage/HeaderImage"
 import EditIcon from "../Image/EditIcon.png"
@@ -13,11 +13,18 @@ import { RxExit } from "react-icons/rx";
 import "../Styles/User.css"
 import { fetchHotelsAsync, selectHotels } from '../Redux/hotelSlice';
 import {fetchToursAsync, selectTours} from '../Redux/tourSlice'
-import {  fetchHotelsHistoryAsync, fetchToursHistoryAsync, selectBasketHotels, selectBasketTours } from '../Redux/basketSlice';
+import { fetchCombToursAsync, selectCombTours} from '../Redux/combSlice'
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import {  fetchComboHistoryAsync, fetchHotelsHistoryAsync, fetchToursHistoryAsync, selectBasketCombo, selectBasketHotels, selectBasketTours } from '../Redux/basketSlice';
+import {ReactToPrint} from 'react-to-print'
+import Rating from '@mui/material/Rating';
+import { FaTrash } from "react-icons/fa";
 
-function User() {
+const User = () => {
+  const componentRef = useRef();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const user = useSelector(selectUser);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNicknameEditing, setIsNicknameEditing] = useState(false);
@@ -38,20 +45,21 @@ function User() {
     newPassword:'',
     verifyPassword:'',
   })
-
   const [imageFile, setImageFile] = useState(null);
-
   const [newImageFile, setNewImageFile] = useState(null)
-
   const [tabPage,setTabPage] = useState(0)
-
   const hotels = useSelector(selectHotels)
-
   const basketHotels = useSelector(selectBasketHotels);
-
   const tours = useSelector(selectTours)
-
   const basketTours = useSelector(selectBasketTours)
+  const combos = useSelector(selectCombTours)
+  const basketCombo = useSelector(selectBasketCombo)
+  const userReviews = useSelector(selectUserReviews)
+  const [expandedItemId, setExpandedItemId] = useState(null);
+
+  const toggleExpand = (id) => {
+        setExpandedItemId(prevId => (prevId === id ? null : id));
+  };
 
   const checkPass = async () => {
     try{
@@ -223,6 +231,18 @@ function User() {
   };
 
   useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen]);
+
+  useEffect(() => {
     if (user) {
       setUpdatedUser({
         nickname: user.nickname || "",
@@ -248,48 +268,54 @@ function User() {
   useEffect(() => {
     dispatch(fetchHotelsHistoryAsync());
     dispatch(fetchToursHistoryAsync())
+    dispatch(fetchComboHistoryAsync())
 }, [dispatch]);
 
 useEffect(() => {
   dispatch(fetchHotelsAsync());
-  dispatch(fetchToursAsync())
+  dispatch(fetchToursAsync());
+  dispatch(fetchCombToursAsync())
+  dispatch(getAllUserReviews())
 }, [dispatch]);
 
   return (
     <div className='user_page_container'>
       <HeaderImage blurBackground={true}>
         <div className='user_page_panel'>
-          <GiSamuraiHelmet onClick={() => setTabPage(0)}/>
-          <FaEdit onClick={openModal} />
-          <FaStar onClick={() => setTabPage(1)}/>
-          <FaHistory onClick={() => setTabPage(2)}/>
-          <RxExit onClick={unAuth}/>
+          <GiSamuraiHelmet 
+            className={tabPage === 0 ? 'icon active' : 'icon'}
+            onClick={() => setTabPage(0)}
+          />
+          <FaEdit 
+            className='icon' 
+            onClick={openModal} 
+          />
+          <FaStar
+            className={tabPage === 1 ? 'icon active' : 'icon'}
+            onClick={() => setTabPage(1)}
+          />
+          <FaHistory 
+            className={tabPage === 2 ? 'icon active' : 'icon'}
+            onClick={() => setTabPage(2)}
+          />
+          <RxExit 
+            className='icon'
+            onClick={unAuth}
+          />
         </div>
       <div className='profile_container'>
         {tabPage === 0 
         ?
           <div className='user_info_container'>
-            <h1 style={{color:'white',marginBottom:'70px'}}>Профиль</h1>
+            <h1 style={{color:'white',marginTop:'0'}}>Профиль</h1>
             <div className='block_block_block'>
               <div className='user_info'>
                 <div className='user_nickname'>
-                  <p>Имя пользователя : {user.nickname ? user.nickname : "-"}</p>
+                  <p>Имя пользователя : <br></br>{user.nickname ? user.nickname : "-"}</p>
                   <hr></hr>
                 </div>
                 <div className='user_email'>
-                  <p>Почта пользователя : {user.email}</p>
-                  <hr></hr>
-                </div>
-                <div className='user_role'>
-                  <p>Роль пользователя : {user.role}</p>
-                  <hr></hr>
-                </div>
-                <div className='user_role'>
-                  <p>Количество отзывов : </p>
-                  <hr></hr>
-                </div>
-                <div className='user_role'>
-                  <p>Средняя оценка отзывов : </p>
+                  <p>Почта пользователя : <br></br>{user.email}</p>
                   <hr></hr>
                 </div>
               </div>
@@ -301,106 +327,203 @@ useEffect(() => {
           :<></>
         }
         {tabPage === 1
-        ? <div>
-
+        ? <div style={{overflowY: 'auto',paddingRight:'20px'}}>
+            <h1 style={{color:'white',padding:'0',margin:'0'}}>Отзывы</h1>
+            {userReviews && userReviews.length>0 ? (
+              <div className='reviews_container'>
+                {userReviews.map((review,index) => {
+                  return(
+                    <div className='flex_jesko'>
+                      <div key={review.id} className='review_item user_review'>
+                        <div style={{display:'flex',flexDirection:'row', justifyContent:'space-between'}}>
+                          <Rating name="read-only" value={review.rate} size="large" readOnly />
+                          {review.createdAt && (
+                            <p className='p_review'>{new Date(review.createdAt).toLocaleDateString('ru-RU')}</p>
+                          )}
+                        </div>
+                        <div style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
+                          {review.description && <p className='p_review'>{review.description}</p>}
+                        </div>
+                        <hr></hr>
+                      </div>
+                      <button className='admin_controller_toogle_button'><FaTrash/></button>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <h1>Нет отзывов</h1>
+            )}
           </div>
         :<></>
         }
         {tabPage === 2
-        ? <div>
+        ? <div style={{overflowY: 'auto',paddingRight:'20px'}}>
             {basketHotels && basketHotels.length>0 && (
               <>
-              <h1 style={{color:'white'}}>История покупок Отелей</h1>
-            <div className='history_page_container'>
-              <table className='table_history'>
-                <thead className='head_history'>
-                  <tr className='table_row_history'>
-                    <th className='head_history_p'>Отель</th>
-                    <th className='head_history_p'>Дата</th>
-                    <th className='head_history_p'>Число</th>
-                    <th className='head_history_p'>Стоимость</th>
-                    <th className='head_history_p'>Комнаты</th>
-                    <th className='head_history_p'>ФИО</th>
-                    <th className='head_history_p'>Телефон</th>
-                    <th className='head_history_p'>Паспорт</th>
-                    <th className='head_history_p'>Такси</th>
-                    <th className='head_history_p'>Гид</th>
-                    <th className='head_history_p'>Помощник</th>
-                  </tr>
-                </thead>
-                <tbody className='table_history_body'>
-                  
+                <h1 style={{color:'white',margin:'0',padding:'0'}}>История покупок Отелей</h1>
+                <div className='history_page_container'>                  
                   {basketHotels && basketHotels.length>0 && basketHotels.map(item => {
                     const hotel = hotels.find(h => h.id === item.hotelId);
                     const formattedDateIn = item.date_in ? new Date(item.date_in).toLocaleDateString('ru-RU') : '';
                     const formattedDateOut = item.date_out ? new Date(item.date_out).toLocaleDateString('ru-RU') : '';
                     const formattedDateRange = formattedDateIn && formattedDateOut ? `${formattedDateIn} - ${formattedDateOut}` : '';
-                    return(
-                      <tr key={item.id} className='table_row_history'>
-                        <td className='body_history_p'>{hotel ? hotel.name : 'не определено'}</td>
-                        <td className='body_history_p'>{formattedDateRange}</td>
-                        <td className='body_history_p'>{item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)}</td>
-                        <td className='body_history_p'>{item.price}</td>
-                        <td className='body_history_p'>{Array.isArray(item.rooms)? item.rooms.join(','):item.rooms}</td>
-                        <td className='body_history_p'>{item.fullName}</td>
-                        <td className='body_history_p'>{item.phoneNumber}</td>
-                        <td className='body_history_p'>{item.pasportNumber}</td>
-                        <td className='body_history_p'>{item.taxi}</td>
-                        <td className='body_history_p'>{item.guide}</td>
-                        <td className='body_history_p'>{item.helper}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-                
-              </table>
-              
-            </div></>
+                    const isExpanded = expandedItemId === item.id;
+                    return (
+                      <div key={item.id} className='history_page_item'>
+                          <div onClick={() => toggleExpand(item.id)}  className='history_page_summary'>
+                            <div>
+                                <p>{hotel ? hotel.name : 'не определено'}</p>
+                                <p>{formattedDateRange}</p>
+                            </div>
+                            <div className='chevron_icon'>
+                              {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                            </div>
+                          </div>
+                          {isExpanded && (
+                            <>
+                            <div className='extra_info' ref={componentRef}>
+                              <p>{hotel ? hotel.name : 'не определено'}</p>
+                              <p>{formattedDateRange}</p>
+                              <p>ФИО: {item.fullName.join(' ')}</p>
+                              <p>Всего билетов: {item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)} (Детские: {item.count[1]})</p>
+                              <p>Оплачено: {item.price} (белорусских рублей)</p>
+                              <p>Комнаты: {Array.isArray(item.rooms) ? item.rooms.map((item, index, array) => `${item[0]}(Мест:${item[1]})${index+1===array.length? '': ', '}`) : item.rooms.join('-')}</p>
+                              <p>Дополнительная информация</p>
+                              <p>Номер телефона: {item.phoneNumber}</p>
+                              <p>Номер паспорта: {item.pasportNumber}</p>
+                              <p>Такси: {item.taxi && item.taxi.length>0 ? `Имя: ${item.taxi[0]}, Табличка: ${item.taxi[1]}` : 'нет'}</p>
+                              <p>Помощник: {item.helper && item.helper.length>0 ? `Имя: ${item.helper[0]}, Табличка: ${item.helper[1]}` : 'нет'}</p>
+                              <p>Гид: {item.guide && item.guide.length>0 ? `Имя: ${item.guide[0]}, Табличка: ${item.guide[1]}` : 'нет'}</p>
+                            </div>
+                            <div>
+                            <ReactToPrint
+                              trigger={()=>{
+                                return <button className='pdf_button'>Распечатать</button>
+                              }}
+                              content={() => componentRef.current}
+                              documentTitle='Билет JapanTravel'
+                              pageStyle="print"
+                            />
+                          </div></>
+                          )}
+                      </div>
+                    );
+                  })}              
+                </div>
+              </>
             )}
             {basketTours && basketTours.length>0 && (
               <>
-              <h1 style={{color:'white'}}>История покупок Туров</h1>
-            <div className='history_page_container'>
-              <table className='table_history'>
-                <thead className='head_history'>
-                  <tr className='table_row_history'>
-                    <th className='head_history_p'>Тур</th>
-                    <th className='head_history_p'>Дата</th>
-                    <th className='head_history_p'>Число</th>
-                    <th className='head_history_p'>Стоимость</th>
-                    <th className='head_history_p'>ФИО</th>
-                    <th className='head_history_p'>Телефон</th>
-                    <th className='head_history_p'>Паспорт</th>
-                    <th className='head_history_p'>Такси</th>
-                    <th className='head_history_p'>Гид</th>
-                    <th className='head_history_p'>Помощник</th>
-                  </tr>
-                </thead>
-                <tbody className='table_history_body'>
-                  
-                  {basketTours && basketTours.length>0 && basketTours.map(item_2 => {
-                    const tour = tours.find(t => t.id === item_2.tourId);
-                    const formattedDate = item_2.date ? new Date(item_2.date).toLocaleDateString('ru-RU') : '';
-                    return(
-                      <tr key={item_2.id} className='table_row_history'>
-                        <td className='body_history_p'>{tour ? tour.name : 'не определено'}</td>
-                        <td className='body_history_p'>{formattedDate}</td>
-                        <td className='body_history_p'>{item_2.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)}</td>
-                        <td className='body_history_p'>{item_2.price}</td>
-                        <td className='body_history_p'>{item_2.fullName}</td>
-                        <td className='body_history_p'>{item_2.phoneNumber}</td>
-                        <td className='body_history_p'>{item_2.pasportNumber}</td>
-                        <td className='body_history_p'>{item_2.taxi}</td>
-                        <td className='body_history_p'>{item_2.guide}</td>
-                        <td className='body_history_p'>{item_2.helper}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-                
-              </table>
-              
-            </div></>
+                <h1 style={{color:'white'}}>История покупок Достопримечательностей</h1>
+                <div className='history_page_container'>
+                  {basketTours && basketTours.length>0 && basketTours.map(item => {
+                    const tour = tours.find(t => t.id === item.tourId);
+                    const formattedDate = item.date ? new Date(item.date).toLocaleDateString('ru-RU') : '';
+                    const isExpanded = expandedItemId === item.id;
+                    return (
+                      <div key={item.id} className='history_page_item'>
+                          <div onClick={() => toggleExpand(item.id)}  className='history_page_summary'>
+                            <div>
+                                <p>{tour ? tour.name : 'не определено'}</p>
+                                <p>{formattedDate}</p>
+                            </div>
+                            <div className='chevron_icon'>
+                              {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                            </div>
+                          </div>
+                          {isExpanded && (
+                            <>
+                            <div className='extra_info' ref={componentRef}>
+                              <p>{tour ? tour.name : 'не определено'}</p>
+                              <p>{formattedDate}</p>
+                              <p>ФИО: {item.fullName.join(' ')}</p>
+                              <p>Всего билетов: {item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)} (Детские: {item.count[1]})</p>
+                              <p>Оплачено: {item.price} (белорусских рублей)</p>
+                              <p>Дополнительная информация</p>
+                              <p>Номер телефона: {item.phoneNumber}</p>
+                              <p>Номер паспорта: {item.pasportNumber}</p>
+                              <p>Такси: {item.taxi && item.taxi.length>0 ? `Имя: ${item.taxi[0]}, Табличка: ${item.taxi[1]}` : 'нет'}</p>
+                              <p>Помощник: {item.helper && item.helper.length>0 ? `Имя: ${item.helper[0]}, Табличка: ${item.helper[1]}` : 'нет'}</p>
+                              <p>Гид: {item.guide && item.guide.length>0 ? `Имя: ${item.guide[0]}, Табличка: ${item.guide[1]}` : 'нет'}</p>
+                            </div>
+                            <div>
+                            <ReactToPrint
+                              trigger={()=>{
+                                return <button className='pdf_button'>Распечатать</button>
+                              }}
+                              content={() => componentRef.current}
+                              documentTitle='Билет JapanTravel'
+                              pageStyle="print"
+                            />
+                          </div></>
+                          )}
+                      </div>
+                    );
+                  })}              
+                </div>
+              </>
+            )}
+            {basketCombo && basketCombo.length>0 && (
+              <>
+                <h1 style={{color:'white'}}>История покупок Туров</h1>
+                <div className='history_page_container'>
+                  {basketCombo && basketCombo.length>0 && basketCombo.map((item) => {
+                    const combo = combos.find(h => h.id === item.combinedTourId);
+                    const formattedDateIn = item.date_in ? new Date(item.date_in).toLocaleDateString('ru-RU') : '';
+                    const formattedDateOut = item.date_out ? new Date(item.date_out).toLocaleDateString('ru-RU') : '';
+                    const formattedDateRange = formattedDateIn && formattedDateOut ? `${formattedDateIn} - ${formattedDateOut}` : '';
+                    const isExpanded = expandedItemId === item.id;
+                    return (
+                      <div key={item.id} className='history_page_item'>
+                          <div onClick={() => toggleExpand(item.id)}  className='history_page_summary'>
+                            <div>
+                                <p>{combo?.hotel?.name ? combo.hotel.name : 'не определено'}</p>
+                                <p>{formattedDateRange}</p>
+                            </div>
+                            <div className='chevron_icon'>
+                              {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                            </div>
+                          </div>
+                          {isExpanded && (
+                            <>
+                            <div className='extra_info' ref={componentRef}>
+                              <p style={{fontSize:'20px'}}>{combo?.hotel?.name ? combo.hotel.name : 'не определено'}</p>
+                              <p style={{fontSize:'20px'}}>{formattedDateRange}</p>
+                              {combo.tours.map((tour, index) => {
+                                const tourDate = new Date(item.date[index]).toLocaleDateString('ru-RU');
+                                return (
+                                  <p key={index} style={{fontSize:'20px'}}>{tour.name}: {tourDate}</p>
+                                );
+                              })}
+                              <p>ФИО: {item.fullName.join(' ')}</p>
+                              <p>Всего билетов: {item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)} (Детские: {item.count[1]})</p>
+                              <p>Оплачено: {item.price} (белорусских рублей)</p>
+                              <p>Комнаты: {Array.isArray(item.rooms) ? item.rooms.map((item, index, array) => `${item[0]}(Мест:${item[1]})${index+1===array.length? '': ', '}`) : item.rooms.join('-')}</p>
+                              <p>Дополнительная информация</p>
+                              <p>Номер телефона: {item.phoneNumber}</p>
+                              <p>Номер паспорта: {item.pasportNumber}</p>
+                              <p>Такси: {item.taxi && item.taxi.length>0 ? `Имя: ${item.taxi[0]}, Табличка: ${item.taxi[1]}` : 'нет'}</p>
+                              <p>Помощник: {item.helper && item.helper.length>0 ? `Имя: ${item.helper[0]}, Табличка: ${item.helper[1]}` : 'нет'}</p>
+                              <p>Гид: {item.guide && item.guide.length>0 ? `Имя: ${item.guide[0]}, Табличка: ${item.guide[1]}` : 'нет'}</p>
+                            </div>
+                            <div>
+                              <ReactToPrint
+                                trigger={()=>{
+                                  return <button className='pdf_button'>Распечатать</button>
+                                }}
+                                content={() => componentRef.current}
+                                documentTitle='Билет JapanTravel'
+                                pageStyle="print"
+                              />
+                            </div>
+                            </>
+                          )}
+                      </div>
+                    );
+                  })}              
+                </div>
+              </>
             )}
           </div>
         :<></>
@@ -416,6 +539,12 @@ useEffect(() => {
                 <span className="close" onClick={closeModal}>&times;</span>
             </div>
             <div className='modal_edit'>
+              <div className='modal_photo'>
+                <div className='modal_img' style={newImageFile? {backgroundImage:`url(${newImageFile})`}:{ backgroundImage: `url(${'http://localhost:5000/' + user.img})`}}>
+                  <input className='input_img_modal' id='hidden_image_upload' style={{display:'none'}} type='file' accept='image/*' name='img' onChange={handleImageChange}/>
+                  <label htmlFor='hidden_image_upload' className='change_image'>Изменить</label>
+                </div>
+              </div>
               <div className='modal_text'>
                 <div className='modal_text_name'>
                   {isNicknameEditing ? (
@@ -481,12 +610,6 @@ useEffect(() => {
                       :<></>}
                     </>
                   }
-                </div>
-              </div>
-              <div className='modal_photo'>
-                <div className='modal_img' style={newImageFile? {backgroundImage:`url(${newImageFile})`}:{ backgroundImage: `url(${'http://localhost:5000/' + user.img})`}}>
-                  <input className='input_img_modal' id='hidden_image_upload' style={{display:'none'}} type='file' accept='image/*' name='img' onChange={handleImageChange}/>
-                  <label htmlFor='hidden_image_upload' className='change_image'>Изменить</label>
                 </div>
               </div>
             </div>

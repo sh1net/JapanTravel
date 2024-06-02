@@ -54,18 +54,15 @@ export const getTourReviews = async (tourId) => {
 export const createReview = async (description,rate,tourId) => {
   try{
     const {data} = await $authHost.post('api/user/review',{description,rate,tourId})
-    if(data){
-      const id = tourId
-      await $host.patch('/api/tour/reviews',{id})
-    }
+    alert(data)
   }catch(e){
     alert(e.response?.data.message || 'Произошла ошибка')
   }
 }
 
-export const payBasketTour = async (tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help) => {
+export const payBasketTour = async (tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price) => {
   try{
-    const {data} = await $authHost.patch('/api/tour/payTour', {tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help})
+    const {data} = await $authHost.patch('/api/tour/payTour', {tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price})
     return data
   }catch(e){
     alert(e.response?.data.message || 'Произошла ошибка')

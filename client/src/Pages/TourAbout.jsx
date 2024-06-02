@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import "../Styles/TourAbout.css";
 import BeforeFooter from '../Components/BeforeFooter';
@@ -39,6 +39,8 @@ function TourAbout() {
     fetchTourData();
   }, [id]);
 
+  console.log(reviews)
+
   useEffect(() => {
     if(tour && tour.price){
       let totalKidsPrice = 0
@@ -62,6 +64,18 @@ function TourAbout() {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen]);
+
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -73,61 +87,100 @@ function TourAbout() {
     setFreeCount(data)
   };
 
-  const addCount = () => {
-    if(count && count<freeCount.count - kidsCount){
-      setCount(count + 1);
-    }else{
-      setCount(1)
+  const intervalRef = useRef(null);
+  const delay = 2000;
+  const interval = 100;
+
+  const addCount = useCallback(() => {
+    setCount((prevCount) => {
+      if (freeCount && prevCount < freeCount.count - kidsCount) {
+        return prevCount + 1;
+      }
+      return prevCount;
+    });
+  }, [freeCount?.count, kidsCount]);
+
+  const minusCount = useCallback(() => {
+    setCount((prevCount) => {
+      if (prevCount > 1) {
+        return prevCount - 1;
+      }
+      return prevCount;
+    });
+  }, []);
+
+  const handleMouseDown = (action) => {
+    if (action === 'add') {
+      addCount();
+      intervalRef.current = setInterval(addCount, interval);
+    } else if (action === 'minus') {
+      minusCount();
+      intervalRef.current = setInterval(minusCount, interval);
     }
-    
   };
 
-  const minusCount = () => {
-    if (count && count > 1) {
-      setCount(count - 1);
-    }
+  const handleMouseUp = () => {
+    clearInterval(intervalRef.current);
   };
 
-  const addKidsCount = () => {
-    if (kidsCount < freeCount.count - count) {
-      setKidsCount(kidsCount + 1);
-    }else{
-      setKidsCount(0)
-    }
+  const handleMouseLeave = () => {
+    clearInterval(intervalRef.current);
   };
 
-  const minusKidsCount = () => {
-    if (kidsCount > 0) {
-      setKidsCount(kidsCount - 1);
+  const addKidsCount = useCallback(() => {
+    setKidsCount((prevCount) => {
+      if (freeCount && prevCount < freeCount.count - count) {
+        return prevCount + 1;
+      }
+      return prevCount;
+    });
+  }, [freeCount?.count, count]);
+
+  const minusKidsCount = useCallback(() => {
+    setKidsCount((prevCount) => {
+      if (prevCount >= 1) {
+        return prevCount - 1;
+      }
+      return prevCount;
+    });
+  }, []);
+
+  const handleKidsMouseDown = (action) => {
+    if (action === 'add') {
+      addKidsCount();
+      intervalRef.current = setInterval(addKidsCount, interval);
+    } else if (action === 'minus') {
+      minusKidsCount();
+      intervalRef.current = setInterval(minusKidsCount, interval);
     }
+  };
+  
+  const handleKidsMouseUp = () => {
+    clearInterval(intervalRef.current);
+  };
+  
+  const handleKidsMouseLeave = () => {
+    clearInterval(intervalRef.current);
   };
 
   const toggleShowKids = () => {
-    setShowKids(!showKids);
     if(!showKids){
       setKidsCount(0)
     }
+    setShowKids(!showKids);
   };
 
   const handleCountChange = (e) => {
     const value = parseInt(e.target.value)
-    if(!isNaN(value) && value <= freeCount.value - kidsCount){
+    if(value<=freeCount.count-kidsCount){
       setCount(value)
-    }else if(value>freeCount.count - kidsCount){
-      setCount(freeCount.count - kidsCount)
-    }else{
-      setCount(1)
     }
   }
 
   const handleKidsCountChange = (e) => {
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value <= freeCount.count - count) {
-      setKidsCount(value);
-    } else if (value > freeCount.count - count) {
-      setKidsCount(freeCount.count - count);
-    } else {
-      setKidsCount(0);
+    if(value<=freeCount.count-kidsCount){
+      setKidsCount(value)
     }
   }
 
@@ -147,7 +200,7 @@ function TourAbout() {
           if(createdTour){
             alert('Успешно')
             setSelectedDate(null)
-            setCount(0)
+            setCount(1)
             setKidsCount(0)
             setShowKids(false)
             closeModal()
@@ -191,7 +244,6 @@ function TourAbout() {
       if(reviewText!==undefined && reviewText.length>0 && reviewText!==''){
         console.log(valid,error,helperText, reviewText)
         await createReview(reviewText,reviewRate,id)
-        alert('Спасибо за ваш отзыв')
         window.location.reload()
       }else{
         setError(true)
@@ -262,8 +314,15 @@ function TourAbout() {
                       )}
                       <p className='p_username_review'>{review.user.nickname}</p>
                     </div>
-                    <Rating name="read-only" value={review.rate} size="large" readOnly />
-                    {review.description && <p className='p_review'>{review.description}</p>}
+                    <div style={{display:'flex',flexDirection:'row', justifyContent:'space-between'}}>
+                      <Rating name="read-only" value={review.rate} size="large" readOnly />
+                      {review.createdAt && (
+                        <p className='p_review'>{new Date(review.createdAt).toLocaleDateString('ru-RU')}</p>
+                      )}
+                    </div>
+                    <div style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
+                      {review.description && <p className='p_review'>{review.description}</p>}
+                    </div>
                     <hr></hr>
                   </div>))
                 ) : (
@@ -305,9 +364,23 @@ function TourAbout() {
                   <div className='modal_count'>
                     <p className='modal_p'>Билеты</p>
                     <div className='modal_count_edit'>
-                      <FaMinus className='modal_plus_minus' onClick={minusCount} />
+                      <FaMinus className='modal_plus_minus' 
+                        onMouseDown={() => handleMouseDown('minus')}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onTouchStart={() => handleMouseDown('minus')}
+                        onTouchEnd={handleMouseUp}
+                        onTouchCancel={handleMouseLeave}
+                      />
                       <input type='number' value={count} onChange={handleCountChange} className='modal_count_count' />
-                      <FaPlus className='modal_plus_minus' onClick={addCount} />
+                      <FaPlus className='modal_plus_minus' 
+                        onMouseDown={() => handleMouseDown('add')}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onTouchStart={() => handleMouseDown('add')}
+                        onTouchEnd={handleMouseUp}
+                        onTouchCancel={handleMouseLeave}
+                      />
                     </div>
                   </div>
                   <div className='tour_about_children_container'>
@@ -318,14 +391,28 @@ function TourAbout() {
                     <div className='modal_count'>
                       <p className='modal_p'>Дети</p>
                       <div className='modal_count_edit'>
-                        <FaMinus className='modal_plus_minus' onClick={minusKidsCount} />
+                        <FaMinus className='modal_plus_minus' 
+                          onMouseDown={() => handleKidsMouseDown('minus')}
+                          onMouseUp={handleKidsMouseUp}
+                          onMouseLeave={handleKidsMouseLeave}
+                          onTouchStart={() => handleKidsMouseDown('minus')}
+                          onTouchEnd={handleKidsMouseUp}
+                          onTouchCancel={handleKidsMouseLeave}
+                        />
                         <input type='number' value={kidsCount} onChange={handleKidsCountChange} className='modal_count_count' />
-                        <FaPlus className='modal_plus_minus' onClick={addKidsCount} />
+                        <FaPlus className='modal_plus_minus' 
+                          onMouseDown={() => handleKidsMouseDown('add')}
+                          onMouseUp={handleKidsMouseUp}
+                          onMouseLeave={handleKidsMouseLeave}
+                          onTouchStart={() => handleKidsMouseDown('add')}
+                          onTouchEnd={handleKidsMouseUp}
+                          onTouchCancel={handleKidsMouseLeave}
+                        />
                       </div>
                     </div>
                   )}
                   <div style={{display:'flex', flexDirection:'row', alignItems:'center',justifyContent:'space-between'}}>
-                    <p style={{margin:'0'}}>Стоимость : {price>0?price : tour.price}</p>
+                    <p style={{margin:'0'}}>Стоимость : {price>0?parseInt(price) : parseInt(tour.price)}</p>
                     <button onClick={addToCart}>Добавить в корзину</button>
                   </div>
                 </>

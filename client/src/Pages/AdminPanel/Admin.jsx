@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import "./Styles/Admin.css"
 import TourController from './Controllers/TourController';
 import HotelController from './Controllers/HotelController'
-import UserController from './Controllers/UserController'
+import ComboController from './Controllers/ComboController'
 import TourModal from './Modals/TourModal';
-import TourAbout from '../TourAbout';
+import ReviewsController from './Controllers/ReviewsController';
 
 function Admin() {
 
@@ -37,8 +37,11 @@ function Admin() {
           <button className='admin_add_button'>Добавить</button>
         </div><hr style={{width:'100%'}}></hr>
         <div className='admin_tab_page_container'>
-          <p className='admin_tab_page_text' onClick={()=>changeTab('user')}>Пользователи</p>
+          <p className='admin_tab_page_text' onClick={()=>changeTab('combo')}>Туры</p>
           <button className='admin_add_button'>Добавить</button>
+        </div><hr style={{width:'100%'}}></hr>
+        <div className='admin_tab_page_container'>
+          <p className='admin_tab_page_text' onClick={()=>changeTab('reviews')}>Отзывы</p>
         </div><hr style={{width:'100%'}}></hr>
         </div>
       </div>
@@ -49,9 +52,12 @@ function Admin() {
         {page==='hotel' && (
           <HotelController/>
         )}        
-        {page==='user' && (
-          <UserController/>
+        {page==='combo' && (
+          <ComboController/>
         )} 
+        {page === 'reviews' && (
+          <ReviewsController/>
+        )}
       </div>
       {isTourModalOpen ? 
         <TourModal closeModal={closeModal} isEdit={false}/>

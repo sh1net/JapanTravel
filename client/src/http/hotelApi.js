@@ -33,9 +33,9 @@ export const addHotelToCart = async (hotelId, date_in, date_out, rooms, hotelCou
   }
 }
 
-export const BuyOneHotel = async (basket_id) => {
+export const BuyOneHotel = async (hotelId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price) => {
   try{
-      const {data} = await $authHost.patch('api/hotel/payBasketElem', {basket_id})
+      const {data} = await $authHost.patch('api/hotel/payBasketElem', {hotelId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price})
       alert(data)
   }catch(e){
       alert(e.response?.data.message || 'Произошла ошибка')
@@ -51,7 +51,6 @@ export const checkData = async (hotelId, date_in, date_out, count) => {
   try{
     const {data} = await $authHost.post('api/hotel/isDataCorrect', {hotelId, date_in, date_out, count})
     if(data){
-      console.log(data)
       return data
     }
   }catch(e){
@@ -71,10 +70,7 @@ export const fetchHotelReviews = async (id) => {
 export const createHotelReview = async (description, rate, hotelId) => {
   try{
     const {data} = $authHost.post('api/hotel/review', {description, rate, hotelId})
-    if(data){
-      const id = hotelId
-      $authHost.patch('api/hotel/reviews', {id})
-    }
+    alert(data)
   }catch(e){
     alert(e.response?.data.message || 'Произошла ошибка')
   }

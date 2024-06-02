@@ -3,7 +3,6 @@ import { $authHost } from ".";
 export const fetchBasketHotel = async () => {
     try{
         const {data} = await $authHost.get('api/hotel/basket')
-        console.log('Api Hotels : ', data)
         return data
     }
     catch(e){
@@ -14,7 +13,16 @@ export const fetchBasketHotel = async () => {
 export const fetchBasketTour = async () => {
     try{
         const {data} = await $authHost.get('api/tour/basket')
-        console.log('Api Tours : ', data)
+        return data
+    }
+    catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
+export const fetchBasketCombo = async () => {
+    try{
+        const {data} = await $authHost.get('api/combtour/basket')
         return data
     }
     catch(e){
@@ -26,7 +34,6 @@ export const fetchBasketTour = async () => {
 export const fetchHotelHistory = async () => {
     try{
         const {data} = await $authHost.get('api/basket/hHistory')
-        console.log(data)
         return data
     }catch(e){
         console.log(e.response?.data.message || 'Произошла ошибка')
@@ -36,6 +43,15 @@ export const fetchHotelHistory = async () => {
 export const fetchTourHistory = async () => {
     try{
         const {data} = await $authHost.get('api/basket/tHistory')
+        return data
+    }catch(e){
+        console.log(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
+export const fetchComboHistory = async () => {
+    try{
+        const {data} = await $authHost.get('api/basket/cHistory')
         console.log(data)
         return data
     }catch(e){

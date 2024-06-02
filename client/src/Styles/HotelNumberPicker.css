@@ -3,8 +3,8 @@
     color: white;
     box-shadow: inset;
     color: black;
-    display: flex;
-    flex-wrap: wrap;
+    display:grid;
+    grid-template-columns: repeat(10,1fr);
   }
   
   .hotel_number {
@@ -16,6 +16,7 @@
     background-color: #f8f9fa;
     font-size: 15px;
     border-radius: 5px;
+    text-align: center;
   }
   
   .hotel_number:hover {

@@ -49,3 +49,28 @@
 	font-size: 20px;
 	margin:3px 3px;
 }
+
+.admin_info{
+	display:flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.admin_items{
+	width:100%;
+}
+
+.admin_review{
+	margin:8px;
+	font-size: 24px;
+}
+
+.admin_review_controllers{
+	display:flex;
+	flex-direction: row;
+	justify-content: flex-end;
+}
+
+.admin_review_controller_container{
+	width:1000px;
+}

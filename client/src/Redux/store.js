@@ -4,6 +4,7 @@ import tourReducer from './tourSlice';
 import hotelReducer from './hotelSlice'
 import basketReducer from './basketSlice'
 import combTourReducer from './combSlice'
+import reviewReducer from './reviewSlice'
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     hotel: hotelReducer,
     basket: basketReducer,
     combTour: combTourReducer,
+    review:reviewReducer
   },
 });
 
