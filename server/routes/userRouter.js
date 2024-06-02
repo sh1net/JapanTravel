@@ -13,4 +13,5 @@ router.patch('/update', userController.UpdateUser)
 router.post('/review', authMiddleware,userController.createReview)
 router.get('/userReviews',authMiddleware,userController.getUserReviews)
 router.get('/tourReviews/:tourId',userController.getTourReviews)
+router.patch('/reviewUpdate',userController.updateReview)
 module.exports = router

@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const { Hotel, HotelInfo, HotelDates, UserBasketsHotels, HotelReviews, User } = require('../models/models')
+const { Hotel, HotelInfo, HotelDates, UserBasketsHotels, HotelReviews, User, CombineTourBasket, CombinedTours } = require('../models/models')
 const path = require('path')
 const uuid = require('uuid')
 const jwt = require('jsonwebtoken')
@@ -45,16 +45,15 @@ class HotelController {
 
     async addToCart(req, res, next) {
         try {
-            const { hotelId, date_in, date_out, rooms, hotelCount, price } = req.body;//Принимаем значения
-            const massRooms = rooms.split(',').map(Number);//Получаем массив комнат
-    
+            const { hotelId, date_in, date_out, rooms, hotelCount, price } = req.body; // Принимаем значения
+            const massRooms = rooms // Получаем двумерный массив комнат
             const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
             const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
-            const { id } = decodedToken;//Получаем user id
-            
-            const countArr = hotelCount.split(',').map(str => parseInt(str)); //Массив билетов
-            const count = countArr.reduce((accumulator, currentValue) => accumulator + currentValue, 0);//Сумма билетов
-            
+            const { id } = decodedToken; // Получаем user id
+    
+            const countArr = hotelCount.split(',').map(str => parseInt(str)); // Массив билетов
+            const count = countArr.reduce((accumulator, currentValue) => accumulator + currentValue, 0); // Сумма билетов
+    
             if (!hotelId) {
                 return res.json('ID отеля не указан');
             }
@@ -64,9 +63,10 @@ class HotelController {
             if (!rooms) {
                 return res.json('Номера не указаны');
             }
-            if (parseInt(count) !== massRooms.length) {
+            const totalBeds = massRooms.reduce((acc, room) => acc + room[1], 0);
+            if (parseInt(count) !== totalBeds) {
                 return res.json('Количество номеров не совпадает с указанным числом');
-            }           
+            }
     
             const userBasket = await UserBasketsHotels.findAll({
                 where: {
@@ -83,14 +83,17 @@ class HotelController {
                     acc.push(...booking.rooms);
                     return acc;
                 }, []);
-    
-                const hasMatchingRooms = userBasketRooms.some((room) => massRooms.includes(room));
+                const hasMatchingRooms = userBasketRooms.some((room) => 
+                    massRooms.some(([roomNumber, beds]) => 
+                        roomNumber === room[0] && beds === room[1]
+                    )
+                );
     
                 if (hasMatchingRooms) {
                     return next(ApiError.badRequest('Номера уже были добавлены'));
                 }
             }
-            
+    
             // Создание записи в базе данных
             const addToBasket = await UserBasketsHotels.create({
                 hotelId: hotelId,
@@ -107,16 +110,14 @@ class HotelController {
         }
     }
     
-
-    async isDataCorrect(req,res,next) {
+    async isDataCorrect(req, res, next) {
         try {
-            const {hotelId, date_in, date_out, count} = req.body
+            const { hotelId, date_in, date_out, count } = req.body;
             const data = {
-                rooms: [],
                 count: 0,
                 isOk: false
             };
-            console.log({hotelId, date_in, date_out, count})
+    
             const userBasketHotel = await UserBasketsHotels.findAll({
                 where: {
                     hotelId: hotelId,
@@ -125,21 +126,44 @@ class HotelController {
                     date_out: { [Op.gt]: date_in },
                 }
             });
+
+            const userCombine = await CombinedTours.findAll({
+                where: {
+                    hotelId: hotelId,
+                }
+            })
+            const combineIds = userCombine.map(item => item.id)
+            const userBasketCombine = await CombineTourBasket.findAll({
+                where: {
+                    combinedTourId: {[Op.in]:combineIds},
+                    status: true,
+                    date_in: { [Op.lt]: date_out },
+                    date_out: { [Op.gt]: date_in },
+                }
+            }) 
+    
             const hotel = await HotelInfo.findOne({
                 where: {
                     hotelId: hotelId
                 }
             });
-            const freeRooms = hotel.freerooms;
-            let availableRooms;
-            if (userBasketHotel && userBasketHotel.length > 0) {
-                const bookedRooms = userBasketHotel.reduce((acc, booking) => {
-                    acc.push(...booking.rooms);
-                    return acc;
-                }, []);
     
-                availableRooms = freeRooms.filter(room => !bookedRooms.includes(room));
-                if (availableRooms && availableRooms.length >= parseInt(count)) {
+            const freeRooms = hotel.freerooms;
+            let availableRooms = [...freeRooms];
+    
+            if (userBasketHotel && userBasketHotel.length > 0) {
+                const bookedRooms = new Set(userBasketHotel.reduce((acc, booking) => {
+                    acc.push(...booking.rooms.map(room => room[0]));
+                    return acc;
+                }, []));
+                let bookedRooms_2
+                if(userBasketCombine && userBasketCombine.length>0){
+                    bookedRooms_2 = new Set(userBasketCombine.reduce((acc,booking) => {
+                        acc.push(...booking.rooms.map(room => room[0]))
+                    }))
+                }
+                availableRooms = availableRooms.filter(room => !bookedRooms.has(room[0]) && (bookedRooms_2 ? !bookedRooms_2.has(room[0]): true));
+                if (availableRooms.length >= parseInt(count)) {
                     data.rooms = availableRooms;
                     data.count = availableRooms.length;
                     data.isOk = true;
@@ -147,32 +171,61 @@ class HotelController {
                     data.isOk = false;
                 }
             } else if (freeRooms.length >= parseInt(count)) {
-                data.rooms = freeRooms;
                 data.count = freeRooms.length;
+                data.rooms = availableRooms;
                 data.isOk = true;
             }
+            
             return res.json(data);
         } catch (e) {
-            return next(ApiError.badRequest(e.message))
+            return next(ApiError.badRequest(e.message));
         }
     }
-    
-    
-
+     
     async payCartElem (req,res,next){
-        try{    
+        try{   
+            const maleNames = [
+                "Александр", "Михаил", "Дмитрий", "Иван", "Алексей",
+                "Сергей", "Николай", "Владимир", "Андрей", "Виктор"
+            ];
+            const femaleNames = [
+                "Анна", "Мария", "Елена", "Ольга", "Наталья",
+                "Екатерина", "Ирина", "Татьяна", "Юлия", "Светлана"
+            ];
+            const allNames = [...maleNames, ...femaleNames];
             const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
             const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
             const { id } = decodedToken;
-            const {basket_id, fullName, phoneNumber, pasportNumber, taxi, guide, help} = req.body;
-            console.log(id,basket_id)
+            const {hotelId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price} = req.body;
+            let taxist = []
+            let guider = []
+            let helper = []
+            if(!fullName || !phoneNumber || !pasportNumber){
+                return next(ApiError.badRequest('Заполните все данные'))
+            }
+            if(taxi && taxi.length>0){
+                const randomIndex = Math.floor(Math.random() * allNames.length);
+                taxist[0]=allNames[randomIndex]
+                taxist[1]=taxi
+            }
+            if(guide && guide.length>0){
+                const randomIndex = Math.floor(Math.random() * allNames.length);
+                guider[0]=allNames[randomIndex]
+                guider[1]=guide
+            }
+            if(help && help.length>0){
+                const randomIndex = Math.floor(Math.random() * allNames.length);
+                helper[0]=allNames[randomIndex]
+                helper[1]=help
+            }
             const user_basket = await UserBasketsHotels.findOne({where:{
+                id:basketId,
                 userId:id,
                 status: false,
-                id:basket_id
+                hotelId:hotelId
             }})
             if(user_basket){
-                await user_basket.update({status:true})
+                await user_basket.update({status:true, fullName:fullName.split(','), phoneNumber, pasportNumber, taxi:taxist, guide:guider, helper:helper,price })
             }
             else{
                 return res.json('Такая корзина не найдена')
@@ -210,10 +263,29 @@ class HotelController {
     async getOne(req, res, next) {
         try {
             const { id } = req.params
+
+            const reviews = await HotelReviews.findAll({where:{
+                hotelInfoId:id,
+                status:true
+            }})
+            
+            let rateSum =0
+            let count
+            if(reviews && reviews.length>0){
+                for(let i=0;i<reviews.length;i++){
+                    rateSum +=reviews[i].rate
+                    count = i
+                }   
+                rateSum /=(count+1);
+            }
+
             const hotel = await Hotel.findOne({ where: { id }, include: [{ model: HotelInfo, as: 'info' }] })
             if (!hotel) {
                 return next(ApiError.badRequest("Отель не найден"))
             } else {
+                if(rateSum>=0){
+                    hotel.update({rating:parseInt(rateSum)})
+                }
                 return res.json(hotel)
             }
         } catch (e) {
@@ -227,15 +299,33 @@ class HotelController {
             const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
             const { id } = decodedToken;
             const {description, rate, hotelId} = req.body
+            console.log({description, rate, hotelId})
             const hotel = await HotelInfo.findOne({where:{id:hotelId}})
             if(!hotel){
                 return res.json('что-то пошло не так')
             }
-            const review = await HotelReviews.create({description,rate,userId:id, hotelInfoId:hotelId})
-            if(!review){
-                return res.json('Не получилось оставить отзыв')
+            const isPayed = await UserBasketsHotels.findAll({where:{
+                userId:id,
+                status:true,
+                hotelId:hotelId
+            }})
+            if(isPayed && isPayed.length>0){
+                const isReview = await HotelReviews.findAll({where:{
+                    userId:id, 
+                    hotelInfoId:hotelId,
+                }})
+                if(isReview && isReview.length>0){
+                    return next(ApiError.badRequest('Отзыв уже был оставлен'))
+                }else{
+                    const review = await HotelReviews.create({description,rate,userId:id, hotelInfoId:hotelId, status:false})
+                    if(!review){
+                        return res.json('Не получилось оставить отзыв')
+                    }
+                    return res.json('Ваш отзыв отправлен на рассмотрение')
+                }
+            }else{
+                return next(ApiError.badRequest('Товар не был куплен'))
             }
-            return res.json('Ваш отзыв оставлен успешно')
         }catch(e){
             return res.json('Ошибка сервера')
         }
@@ -245,7 +335,8 @@ class HotelController {
         try{
             const {hotelId} = req.params
             const reviews = await HotelReviews.findAll({where:{
-                hotelInfoId:hotelId
+                hotelInfoId:hotelId,
+                status:true,
             }})
             const usersPromises = reviews.map(async (result) => {
                 const user = await User.findOne({ where: { id: result.userId } });
@@ -266,30 +357,19 @@ class HotelController {
         }
     }
 
-    async updateReviews (req,res,next){
+    async updateReview (req,res,next){
         try{
-            const {id} = req.body
-            const reviews = await HotelReviews.findAll({where:{
-                hotelInfoId:id
+            const {userId, reviewId} = req.body
+            const review = await HotelReviews.findOne({where:{
+                userId:userId,
+                id:reviewId
             }})
-            
-            let rateSum =0
-            let count
-            for(let i=0;i<reviews.length;i++){
-                rateSum +=reviews[i].rate
-                count = i
-            }   
-            rateSum /=(count+1);
-
-            const hotel = await Hotel.findOne({where:{
-                id:id
-            }})
-            if(hotel){
-                hotel.update({rating:parseInt(rateSum)})
+            if(review){
+                 review.update({userId:userId,id:reviewId,status:true})
             }
-            return res.json(hotel.rating)
+            return res.json(review)
         }catch(e){
-            return res.json('Увы')
+            return next(ApiError.badRequest(e.message))
         }
     }
 }

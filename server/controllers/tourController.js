@@ -1,7 +1,7 @@
 const ApiError = require('../error/ApiError')
 const path = require('path')
 const uuid = require('uuid')
-const { Tour, TourInfo, UserBasketTour, UserBasket, Reviews, CombinedTours, TourCombinedTours } = require('../models/models')
+const { Tour, TourInfo, UserBasketTour, UserBasket, Reviews, CombinedTours, TourCombinedTours, CombineTourBasket, User } = require('../models/models')
 const jwt = require('jsonwebtoken')
 const {Op} = require('sequelize')
 const Sequelize = require('sequelize')
@@ -49,30 +49,51 @@ class TourController {
     async update(req, res, next) {
         try {
             const data = req.body
-            const { img } = req.files
-            let fileName = uuid.v4() + '.jpg'
-            img.mv(path.resolve(__dirname, '..', 'static', fileName))
+            const oldImages = data.oldImgs.split(',')
+            console.log({oldImages})
+            let fileName;
+            let fileNames = [];
+            if (req.files && req.files.img) {
+                const { img } = req.files;
+                for (let i = 0; i < img.length; i++) {
+                    fileName = uuid.v4() + '.jpg';
+                    fileNames.push(fileName);
+                    await img[i].mv(path.resolve(__dirname, '..', 'static', fileName));
+                }
+            }
+            
             const tour = await Tour.findByPk(data.id)
             if (!tour) {
                 return res.json('Тур не найден')
             }
+            const updatedImages = tour.img.filter((image) => oldImages.includes(image));
+            console.log({1:updatedImages})
+            if(fileNames && fileNames.length>0){
+                fileNames.map(item => updatedImages.push(item))
+            }
+            console.log({2:updatedImages})
+            if(updatedImages.length<2){
+                return next(ApiError.badRequest('Выберите больше изображений'))
+            }
             
             const tour_info = await TourInfo.findOne({ where: { tourId: tour.id } })
-            await tour.update({
+
+            const data_1 = await tour.update({
                 name: data.name,
-                rating: rateSum,
                 info: data.info,
-                price: data.price,
-                img: fileName
+                price: parseInt(data.price),
+                img: updatedImages,
+                location:data.coordinates.split(','),
+                city:data.city
             })
-            await tour_info.update({
+            const data_2 = await tour_info.update({
                 title: tour.name,
-                description: tour.info,
-                hotelId: data.hotelId,
-                date: data.date,
-                count: data.count
+                description: data.info,
+                tourId: data.tourId,
             })
-            return res.json({ tour, tour_info });
+            if(data_1 && data_2){
+                return res.json('Успешно обновлено');
+            }
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
@@ -82,7 +103,7 @@ class TourController {
         try {
             const { tour_id } = req.params;
             const tour = await Tour.findOne({where:{id:tour_id}})
-            const imgs = tour.img
+            const imgs = tour?.img
             if(imgs && Array.isArray(imgs)) {
                 imgs.forEach(image => {
                     const filePath = path.resolve(__dirname, '..', 'static', image);
@@ -93,6 +114,29 @@ class TourController {
                     });
                 });
             }
+            const data = await TourCombinedTours.findAll({where:{
+                tourId:tour_id
+            }})
+            const tourInfo = await TourInfo.findOne({where:{
+                tourId:tour_id
+            }})
+
+            const basketTour = await UserBasketTour.findAll({where:{
+                status:true,
+                tourId:tour_id
+            }})
+            if (data && data.length > 0) {
+                await Promise.all(data.map(async item => {
+                    await CombineTourBasket.destroy({ where: { combinedTourId: item.combinedTourId } });
+                    await CombinedTours.destroy({ where: { id: item.combinedTourId } });
+                }));
+            }
+            if (basketTour && basketTour.length > 0) {
+                await Promise.all(basketTour.map(item => item.update({ tourId: null })));
+                console.log(basketTour)
+            }
+            await UserBasketTour.destroy({where:{tourId:tour_id}})
+            await Reviews.destroy({where:{tourInfoId:tourInfo.id}})
             await TourInfo.destroy({where:{tourId:tour_id}}) 
             await TourCombinedTours.destroy({where:{tourId:tour_id}})
             await Tour.destroy({where: { id: tour_id }});                     
@@ -114,11 +158,27 @@ class TourController {
     async getOne(req, res, next) {
         try {
             const { id } = req.params
+
+            const reviews = await Reviews.findAll({where:{
+                tourInfoId:id,
+                status:true
+            }})
+            
+            let rateSum = 0
+            let count
+           if(reviews && reviews.length>0){
+                for(let i=0;i<reviews.length;i++){
+                    rateSum +=reviews[i].rate
+                    count = i
+                }   
+                rateSum /=(count+1);
+           }
+
             const tour = await Tour.findOne({
                 where: { id },
                 include: [{ model: TourInfo, as: 'info' }]
             })
-
+            tour.update({rating:parseInt(rateSum)})
             return res.json(tour)
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -132,7 +192,6 @@ class TourController {
             const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
             const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
             const { id } = decodedToken;
-            console.log({tourCount,date, tourId, price})
             const newDate = `${date.split(' ')[0]} 12:00:00`
             const tour = await TourInfo.findOne({where:{
                 tourId:tourId
@@ -154,15 +213,15 @@ class TourController {
                     const dbArr = userBasketTour.count
                     const sumArrays = (arr1, arr2) => arr1.map((num, idx) => num + arr2[idx]);
                     const result = sumArrays(countArr, dbArr);
-                    const price_2 = price + userBasketTour.price
-                    await userBasketTour.update({count:result,price:price_2})  
+                    const price_2 = parseInt(price) + parseInt(userBasketTour.price)
+                    await userBasketTour.update({count:result,price:parseInt(price_2)})  
                     return res.json('Успешно')
                 }
             }else{
                 //Если не нашло в корзине пользователя
                 freeCount -= count
                 if(freeCount>=0){
-                    await UserBasketTour.create({count:countArr,date:newDate,tourId,userId:id, price})
+                    await UserBasketTour.create({count:countArr,date:newDate,tourId,userId:id, price:parseInt(price)})
                     return res.json('Успешно')
                 }
             }
@@ -247,7 +306,7 @@ class TourController {
             const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
             const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
             const { id } = decodedToken;
-            const {tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help} = req.body
+            const {tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price, name} = req.body
             let taxist = []
             let guider = []
             let helper = []
@@ -271,12 +330,13 @@ class TourController {
                 helper[1]=help
             }
             const tour = await UserBasketTour.findOne({where:{
+                id:basketId,
                 userId:id,
                 tourId:tourId,
                 status:false
             }})
             if(tour){
-                await tour.update({status:true, fullName:fullName.split(','), phoneNumber, pasportNumber, taxi:taxist, guide:guider, helper:helper })
+                await tour.update({status:true, fullName:fullName.split(','), phoneNumber, pasportNumber, taxi:taxist, guide:guider, helper:helper, price, name })
             }
             return res.json('Успешно оплачено')
         }catch(e){
@@ -301,30 +361,50 @@ class TourController {
         }
     }
 
-    async updateReviews (req,res,next){
+    async getNotAcceptReviews(req,res,next){
         try{
-            const {id} = req.body
             const reviews = await Reviews.findAll({where:{
-                tourInfoId:id
+                status:false,
             }})
-            
-            let rateSum =0
-            let count
-            for(let i=0;i<reviews.length;i++){
-                rateSum +=reviews[i].rate
-                count = i
-            }   
-            rateSum /=(count+1);
-
-            const tour = await Tour.findOne({where:{
-                id:id
-            }})
-            if(tour){
-                tour.update({rating:parseInt(rateSum)})
+            const usersPromises = reviews.map(async (result) => {
+                const user = await User.findOne({ where: { id: result.userId } });
+                return { nickname: user.nickname, img: user.img };
+            });
+            const users = await Promise.all(usersPromises);
+             
+            if(!reviews || reviews.length<1){
+                return res.json('Нет отзывов')
             }
-            return res.json(tour.rating)
+            const formattedReviews = reviews.map((review, index) => {
+                return { ...review.toJSON(), user: users[index] };
+            });
+    
+            return res.json(formattedReviews);
         }catch(e){
-            return res.json('Увы')
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async updateAcceptReview(req,res,next){
+        try{
+            const {reviewId} = req.body
+            const review = await Reviews.findByPk(reviewId)
+            if(review){
+                review.update({status:true})
+                return res.json('Отзыв одобрен')
+            }
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async delReview(req,res,next){
+        try{
+            const {reviewId} = req.params
+            await Reviews.destroy({where:{id:reviewId}})
+            return res.json('Отзыв удален')
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
         }
     }
 }

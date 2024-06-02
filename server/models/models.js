@@ -16,6 +16,7 @@ const UserBasket = sequelize.define('user_basket', {
 
 const UserBasketTour = sequelize.define('basket_tour', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    name: { type: DataTypes.STRING, unique: false, defaultValue:'' },
     date: { type: DataTypes.DATE, allowNull: false },
     price:{ type: DataTypes.INTEGER, defaultValue:0},
     status:{type: DataTypes.BOOLEAN, defaultValue:false},
@@ -53,15 +54,17 @@ const Hotel = sequelize.define('hotel', {
     img: { type: DataTypes.ARRAY(DataTypes.STRING), unique: true, allowNull: false },
     location: {type:DataTypes.ARRAY(DataTypes.FLOAT), defaultValue: [34.967132, 135.772666]}
 });
-let array = []
-for(let i = 0; i<100;i++){
-    array[i]=i+1;
+let array = [];
+for (let i = 0; i < 100; i++) {
+    let roomNumber = i + 1;
+    let beds = Math.floor(Math.random() * 4) + 1; // Random number of beds between 1 and 4
+    array[i] = [roomNumber, beds];
 }
 const HotelInfo = sequelize.define('hotel_info', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.STRING(100000), allowNull: false },
-    freerooms:{type:DataTypes.ARRAY(DataTypes.INTEGER), defaultValue:array},
+    freerooms: { type: DataTypes.ARRAY(DataTypes.ARRAY(DataTypes.INTEGER)), defaultValue: array },
 })
 
 const UserBasketsHotels = sequelize.define('user_basket_hotel', {
@@ -69,7 +72,7 @@ const UserBasketsHotels = sequelize.define('user_basket_hotel', {
     date_in: {type: DataTypes.DATE, allowNull:false},
     date_out: {type: DataTypes.DATE, allowNull:false},
     count: { type: DataTypes.ARRAY(DataTypes.INTEGER), allowNull: false },
-    rooms: {type:DataTypes.ARRAY(DataTypes.INTEGER),allowNull:false},
+    rooms: {type:DataTypes.ARRAY(DataTypes.ARRAY(DataTypes.INTEGER)),allowNull:false},
     status:{type: DataTypes.BOOLEAN, defaultValue:false},
     price: {type: DataTypes.INTEGER, allowNull:false},
     fullName:{type: DataTypes.ARRAY(DataTypes.STRING),allowNull:true},
@@ -83,13 +86,15 @@ const UserBasketsHotels = sequelize.define('user_basket_hotel', {
 const Reviews = sequelize.define('reviews', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     description: { type: DataTypes.STRING, allowNull: false },
-    rate:{type:DataTypes.INTEGER,allowNull:false}
+    rate:{type:DataTypes.INTEGER,allowNull:false},
+    status:{type: DataTypes.BOOLEAN, defaultValue:false},
 });
 
 const HotelReviews = sequelize.define('hotel_reviews',{
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     description: { type: DataTypes.STRING, allowNull: false },
-    rate:{type:DataTypes.INTEGER,allowNull:false}
+    rate:{type:DataTypes.INTEGER,allowNull:false},
+    status:{type: DataTypes.BOOLEAN, defaultValue:false},
 })
 
 const CombinedTours = sequelize.define('combined_tours', {
@@ -104,7 +109,25 @@ const TourCombinedTours = sequelize.define('TourCombinedTours', {
 const CombinedTourReviews = sequelize.define('combined_tours_reviews',{
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     description: { type: DataTypes.STRING, allowNull: false },
-    rate:{type:DataTypes.INTEGER,allowNull:false}
+    rate:{type:DataTypes.INTEGER,allowNull:false},
+    status:{type: DataTypes.BOOLEAN, defaultValue:false},
+})
+
+const CombineTourBasket = sequelize.define('combined_tours_basket',{
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    date_in: {type: DataTypes.DATE, allowNull:false},
+    date_out: {type: DataTypes.DATE, allowNull:false},
+    date: { type: DataTypes.ARRAY(DataTypes.DATE), allowNull: false },
+    count: { type: DataTypes.ARRAY(DataTypes.INTEGER), allowNull: false },
+    rooms: {type:DataTypes.ARRAY(DataTypes.ARRAY(DataTypes.INTEGER)),allowNull:false},
+    status:{type: DataTypes.BOOLEAN, defaultValue:false},
+    price: {type: DataTypes.INTEGER, allowNull:false},
+    fullName:{type: DataTypes.ARRAY(DataTypes.STRING),allowNull:true},
+    phoneNumber:{type:DataTypes.STRING,allowNull:true},
+    pasportNumber:{type:DataTypes.STRING,allowNull:true},
+    taxi:{type:DataTypes.ARRAY(DataTypes.STRING), defaultValue:null},
+    guide:{type: DataTypes.ARRAY(DataTypes.STRING), defaultValue:null},
+    helper:{type:DataTypes.ARRAY(DataTypes.STRING),defaultValue:null},
 })
 
 
@@ -124,6 +147,12 @@ UserBasketsHotels.belongsTo(User)
 User.hasMany(UserBasketTour)
 UserBasketTour.belongsTo(User)
 
+User.hasMany(CombineTourBasket)
+CombineTourBasket.belongsTo(User)
+
+
+CombinedTours.hasMany(CombineTourBasket)
+CombineTourBasket.belongsTo(CombinedTours)
 
 //Отзывы к местам
 User.hasMany(Reviews);
@@ -131,7 +160,6 @@ Reviews.belongsTo(User);
 
 TourInfo.hasMany(Reviews);
 Reviews.belongsTo(TourInfo);
-
 
 //Отзывы к отелям
 User.hasMany(HotelReviews);
@@ -152,7 +180,7 @@ User.hasMany(CombinedTourReviews);
 CombinedTourReviews.belongsTo(User);
 
 CombinedTours.hasMany(CombinedTourReviews);
-CombinedTourReviews.belongsTo(TourInfo);
+CombinedTourReviews.belongsTo(CombinedTours);
 
 Tour.hasMany(TourInfo, { as: 'info' });
 TourInfo.belongsTo(Tour);
@@ -172,5 +200,7 @@ module.exports = {
     UserBasketsHotels,
     UserBasketTour,
     CombinedTours,
-    TourCombinedTours
+    TourCombinedTours,
+    CombinedTourReviews,
+    CombineTourBasket
 };

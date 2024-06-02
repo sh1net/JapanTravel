@@ -3,7 +3,7 @@ require('dotenv').config()
 const uuid = require('uuid')
 const path = require('path')
 const bcrypt = require('bcrypt')
-const {User, UserBasket, Reviews, TourInfo} = require('../models/models')
+const {User, Reviews, TourInfo, HotelReviews, CombinedTourReviews, Tour, UserBasketTour} = require('../models/models')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
 
@@ -193,13 +193,48 @@ class UserController{
             if(!tour){
                 return res.json('что-то пошло не так')
             }
-            const review = await Reviews.create({description,rate,userId:id, tourInfoId:tourId})
-            if(!review){
-                return res.json('Не получилось оставить отзыв')
+            const isPayed = await UserBasketTour.findAll({where:{
+                userId:id,
+                status:true,
+                tourId:tourId
+            }})
+            if(isPayed && isPayed.length>0){
+                const isReview = await Reviews.findAll({where:{
+                    userId:id, 
+                    tourInfoId:tourId,
+                }})
+                if(isReview && isReview.length>0){
+                    return next(ApiError.badRequest('Отзыв уже был оставлен'))
+                }else{
+                    const review = await Reviews.create({description,rate,userId:id, tourInfoId:tourId, status:false})
+                    if(!review){
+                        return res.json('Не получилось оставить отзыв')
+                    }
+                    return res.json('Ваш отзыв отправлен на рассмотрение')
+                }
+                
+            }else{
+                return next(ApiError.badRequest('Товар не был куплен'))
             }
-            return res.json('Ваш отзыв оставлен успешно')
+            
         }catch(e){
             return res.json('Ошибка сервера')
+        }
+    }
+
+    async updateReview (req,res,next){
+        try{
+            const {userId, reviewId} = req.body
+            const review = await Reviews.findOne({where:{
+                userId:userId,
+                id:reviewId
+            }})
+            if(review){
+                 review.update({userId:userId,id:reviewId,status:true})
+            }
+            return res.json(review)
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
         }
     }
 
@@ -207,7 +242,8 @@ class UserController{
         try{
             const {tourId} = req.params
             const reviews = await Reviews.findAll({where:{
-                tourInfoId:tourId
+                tourInfoId:tourId,
+                status:true,
             }})
             const usersPromises = reviews.map(async (result) => {
                 const user = await User.findOne({ where: { id: result.userId } });
@@ -235,13 +271,30 @@ class UserController{
             const { id } = decodedToken;
             const reviews = await Reviews.findAll({
                 where:{
-                    userId:id
+                    userId:id,
+                    status:true
                 }
             })
-            if(!reviews || reviews.length<1){
+
+            const hotelReviews = await HotelReviews.findAll({where:{
+                userId:id,
+                status:true
+            }})
+
+            const comboReviews = await CombinedTourReviews.findAll({where:{
+                userId:id,
+                status:true
+            }})
+            if((!reviews || reviews.length<1)&&(!hotelReviews || hotelReviews.length<0)&&(!comboReviews || comboReviews.length<0)){
                 return res.json('Нет отзывов')
             }
-            return res.json(reviews)
+
+            const allReviews = [
+                ...reviews.map(review => ({ ...review.toJSON() })),
+                ...hotelReviews.map(hotelReview => ({ ...hotelReview.toJSON() })),
+                ...comboReviews.map(comboReview => ({ ...comboReview.toJSON() }))
+              ];
+            return res.json(allReviews)
         }catch(e){
             return res.json('На сервере нет отзывов')
         }

@@ -12,7 +12,7 @@ router.patch('/payBasketElem', authMiddleware, hotelController.payCartElem)
 router.post('/isDataCorrect', hotelController.isDataCorrect)
 router.post('/review',authMiddleware,hotelController.createReview)
 router.get('/reviews/:hotelId',hotelController.getHotelReviews)
-router.patch('/reviews',hotelController.updateReviews)
+router.patch('/reviewUpdate',hotelController.updateReview)
 
 
 module.exports = router

@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError');
-const { UserBasket, BasketToursPanel, BasketTour, UserBasketsHotels, UserBasketTour } = require("../models/models");
+const { UserBasket, BasketToursPanel, BasketTour, UserBasketsHotels, UserBasketTour, CombineTourBasket } = require("../models/models");
 const jwt = require('jsonwebtoken');
 
 class BasketController {
@@ -89,6 +89,23 @@ class BasketController {
                 status:true
             }})
             return res.json(tours)
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async fetchPayedCombo(req,res,next){
+        try{
+            const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const { id } = decodedToken;
+
+            const combo = await CombineTourBasket.findAll({where:{
+                userId:id,
+                status:true
+            }})
+
+            return res.json(combo)
         }catch(e){
             return next(ApiError.badRequest(e.message))
         }
