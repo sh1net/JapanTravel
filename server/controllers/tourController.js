@@ -1,7 +1,7 @@
 const ApiError = require('../error/ApiError')
 const path = require('path')
 const uuid = require('uuid')
-const { Tour, TourInfo, UserBasketTour, UserBasket, Reviews, CombinedTours, TourCombinedTours, CombineTourBasket, User } = require('../models/models')
+const { Tour, TourInfo, UserBasketTour, UserBasket, Reviews, CombinedTours, TourCombinedTours, CombineTourBasket, User, CombinedTourReviews, HotelReviews } = require('../models/models')
 const jwt = require('jsonwebtoken')
 const {Op} = require('sequelize')
 const Sequelize = require('sequelize')
@@ -40,7 +40,10 @@ class TourController {
                 description: info,
                 tourId: tour.id,
             })
-            return res.json(tour)
+            if(tour && tourInfo){
+                return res.json('Успешно создан')
+            }
+            
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
@@ -50,15 +53,23 @@ class TourController {
         try {
             const data = req.body
             const oldImages = data.oldImgs.split(',')
-            console.log({oldImages})
+            if (!data.name || !data.price || !data.info || !data.city || !data.coordinates ) {
+                return next(ApiError.badRequest('Все поля должны быть заполнены'));
+            }
             let fileName;
             let fileNames = [];
             if (req.files && req.files.img) {
                 const { img } = req.files;
-                for (let i = 0; i < img.length; i++) {
+                if (Array.isArray(img)) {
+                    for (let i = 0; i < img.length; i++) {
+                        fileName = uuid.v4() + '.jpg';
+                        fileNames.push(fileName);
+                        await img[i].mv(path.resolve(__dirname, '..', 'static', fileName));
+                    }
+                } else {
                     fileName = uuid.v4() + '.jpg';
                     fileNames.push(fileName);
-                    await img[i].mv(path.resolve(__dirname, '..', 'static', fileName));
+                    await img.mv(path.resolve(__dirname, '..', 'static', fileName));
                 }
             }
             
@@ -67,18 +78,16 @@ class TourController {
                 return res.json('Тур не найден')
             }
             const updatedImages = tour.img.filter((image) => oldImages.includes(image));
-            console.log({1:updatedImages})
             if(fileNames && fileNames.length>0){
                 fileNames.map(item => updatedImages.push(item))
             }
-            console.log({2:updatedImages})
             if(updatedImages.length<2){
                 return next(ApiError.badRequest('Выберите больше изображений'))
             }
             
             const tour_info = await TourInfo.findOne({ where: { tourId: tour.id } })
 
-            const data_1 = await tour.update({
+            await tour.update({
                 name: data.name,
                 info: data.info,
                 price: parseInt(data.price),
@@ -86,14 +95,12 @@ class TourController {
                 location:data.coordinates.split(','),
                 city:data.city
             })
-            const data_2 = await tour_info.update({
+            await tour_info.update({
                 title: tour.name,
                 description: data.info,
                 tourId: data.tourId,
             })
-            if(data_1 && data_2){
-                return res.json('Успешно обновлено');
-            }
+            return res.json('Успешно обновлено');
         } catch (e) {
             return next(ApiError.badRequest(e.message))
         }
@@ -128,7 +135,7 @@ class TourController {
             if (data && data.length > 0) {
                 await Promise.all(data.map(async item => {
                     await CombineTourBasket.destroy({ where: { combinedTourId: item.combinedTourId } });
-                    await CombinedTours.destroy({ where: { id: item.combinedTourId } });
+                    await CombinedTourReviews.destroy({ where: { id: item.combinedTourId } });
                 }));
             }
             if (basketTour && basketTour.length > 0) {
@@ -159,8 +166,11 @@ class TourController {
         try {
             const { id } = req.params
 
+            const tourInfo = await TourInfo.findOne({where:{
+                tourId:id
+            }})
             const reviews = await Reviews.findAll({where:{
-                tourInfoId:id,
+                tourInfoId:tourInfo.id,
                 status:true
             }})
             
@@ -363,23 +373,35 @@ class TourController {
 
     async getNotAcceptReviews(req,res,next){
         try{
-            const reviews = await Reviews.findAll({where:{
-                status:false,
-            }})
-            const usersPromises = reviews.map(async (result) => {
-                const user = await User.findOne({ where: { id: result.userId } });
-                return { nickname: user.nickname, img: user.img };
-            });
-            const users = await Promise.all(usersPromises);
-             
-            if(!reviews || reviews.length<1){
-                return res.json('Нет отзывов')
-            }
-            const formattedReviews = reviews.map((review, index) => {
-                return { ...review.toJSON(), user: users[index] };
-            });
+            const reviews = await Reviews.findAll({where:{status:false}})
+
+            const hotelReviews = await HotelReviews.findAll({where:{status:false}})
+
+            const comboTourReviews = await CombinedTourReviews.findAll({where:{status:false}})
+
+            const usersPromises = [
+                Promise.all(reviews.map(async (result) => {
+                    const user = await User.findOne({ where: { id: result.userId } });
+                    return { ...result.toJSON(), user: { nickname: user.nickname, img: user.img } };
+                })),
+                Promise.all(hotelReviews.map(async (result) => {
+                    const user = await User.findOne({ where: { id: result.userId } });
+                    return { ...result.toJSON(), user: { nickname: user.nickname, img: user.img } };
+                })),
+                Promise.all(comboTourReviews.map(async (result) => {
+                    const user = await User.findOne({ where: { id: result.userId } });
+                    return { ...result.toJSON(), user: { nickname: user.nickname, img: user.img } };
+                })),
+            ];
+            const [formattedTourReviews, formattedHotelReviews, formattedComboTourReviews] = await Promise.all(usersPromises);
     
-            return res.json(formattedReviews);
+            const review = {
+                tourReviews: formattedTourReviews,
+                hotelReviews: formattedHotelReviews,
+                comboReviews: formattedComboTourReviews,
+            };
+    
+            return res.json(review)
         }catch(e){
             return next(ApiError.badRequest(e.message))
         }

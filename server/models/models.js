@@ -69,6 +69,7 @@ const HotelInfo = sequelize.define('hotel_info', {
 
 const UserBasketsHotels = sequelize.define('user_basket_hotel', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    name: { type: DataTypes.STRING, unique: false, defaultValue:'' },
     date_in: {type: DataTypes.DATE, allowNull:false},
     date_out: {type: DataTypes.DATE, allowNull:false},
     count: { type: DataTypes.ARRAY(DataTypes.INTEGER), allowNull: false },
@@ -115,6 +116,8 @@ const CombinedTourReviews = sequelize.define('combined_tours_reviews',{
 
 const CombineTourBasket = sequelize.define('combined_tours_basket',{
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    hotelName: { type: DataTypes.STRING, unique: false, defaultValue:'' },
+    tourNames: { type:DataTypes.ARRAY(DataTypes.STRING), unique: false, defaultValue:[] },
     date_in: {type: DataTypes.DATE, allowNull:false},
     date_out: {type: DataTypes.DATE, allowNull:false},
     date: { type: DataTypes.ARRAY(DataTypes.DATE), allowNull: false },

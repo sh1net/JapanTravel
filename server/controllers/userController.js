@@ -35,7 +35,7 @@ class UserController{
             return res.json({token})
         }
         catch(e){
-            return next(ApiError.badRequest('Внутренняя ошибка сервера'))
+            return next(ApiError.badRequest(e.message))
         }
     }
     async login(req,res,next){
@@ -177,7 +177,7 @@ class UserController{
                 await user.update({ nickname });
             }
     
-            return res.json(user);
+            return res.json('Успешно обновлен');
         } catch (e) {
             return next(ApiError.badRequest(e.message));
         }
@@ -189,24 +189,24 @@ class UserController{
             const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
             const { id } = decodedToken;
             const {description, rate, tourId} = req.body
-            const tour = await TourInfo.findOne({where:{id:tourId}})
+            const tour = await TourInfo.findOne({where:{tourId:tourId}})
             if(!tour){
-                return res.json('что-то пошло не так')
+                return res.json('Тур не найден')
             }
-            const isPayed = await UserBasketTour.findAll({where:{
+            const isPayed = await UserBasketTour.findAndCountAll({where:{
                 userId:id,
                 status:true,
                 tourId:tourId
             }})
-            if(isPayed && isPayed.length>0){
-                const isReview = await Reviews.findAll({where:{
+            if(isPayed && isPayed.count>0){
+                const isReview = await Reviews.findAndCountAll({where:{
                     userId:id, 
                     tourInfoId:tourId,
                 }})
-                if(isReview && isReview.length>0){
+                if(isReview && isReview.count>=isPayed.count){
                     return next(ApiError.badRequest('Отзыв уже был оставлен'))
                 }else{
-                    const review = await Reviews.create({description,rate,userId:id, tourInfoId:tourId, status:false})
+                    const review = await Reviews.create({description,rate,userId:id, tourInfoId:tour.id, status:false})
                     if(!review){
                         return res.json('Не получилось оставить отзыв')
                     }
@@ -241,8 +241,12 @@ class UserController{
     async getTourReviews (req,res,next){
         try{
             const {tourId} = req.params
+
+            const tour = await TourInfo.findOne({where:{
+                tourId:tourId
+            }})
             const reviews = await Reviews.findAll({where:{
-                tourInfoId:tourId,
+                tourInfoId:tour.id,
                 status:true,
             }})
             const usersPromises = reviews.map(async (result) => {
@@ -297,6 +301,54 @@ class UserController{
             return res.json(allReviews)
         }catch(e){
             return res.json('На сервере нет отзывов')
+        }
+    }
+
+    async delUserReview(req,res,next){
+        try{
+            const formReviews = req.params
+            const newForm = JSON.parse(formReviews.formReviews)
+            console.log(newForm)
+            const token = req.headers.authorization.split(' ')[1];
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const { id } = decodedToken;
+
+            if(newForm.tourId){
+                await Reviews.destroy({
+                    where:{
+                        id:newForm.reviewId,
+                        tourInfoId:newForm.tourId,
+                        userId:id,
+                        status:true
+                    }
+                })
+            }
+
+            if(newForm.hotelId){
+                await HotelReviews.destroy({
+                    where:{
+                        id:newForm.reviewId,
+                        hotelInfoId:newForm.hotelId,
+                        userId:id,
+                        status:true
+                    }
+                })
+            }
+
+            if(newForm.combinedTourId){
+                await CombinedTourReviews.destroy({
+                    where:{
+                        id:newForm.reviewId,
+                        combinedTourId:newForm.combinedTourId,
+                        userId:id,
+                        status:true
+                    }
+                })
+            }
+
+            return res.json('Отзыв удален')
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
         }
     }
            

@@ -1,3 +1,5 @@
+
+
 const Router = require('express')
 const router = new Router()
 const authMiddleware = require('../middleware/authMiddleware')
@@ -13,5 +15,8 @@ router.post('/isDataCorrect',combinedTourController.checkFree)
 router.post('/combBasket',combinedTourController.addToCart)
 router.patch('/payCombo', combinedTourController.payCombo)
 router.patch('/reviewUpdate',combinedTourController.updateReview)
+router.patch('/acceptReview',combinedTourController.updateAcceptReview)
+router.delete('/reviewCancel/:reviewId',combinedTourController.delReview)
+router.delete('/:comboTourId',combinedTourController.delete)
 
 module.exports = router

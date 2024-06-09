@@ -14,4 +14,5 @@ router.post('/review', authMiddleware,userController.createReview)
 router.get('/userReviews',authMiddleware,userController.getUserReviews)
 router.get('/tourReviews/:tourId',userController.getTourReviews)
 router.patch('/reviewUpdate',userController.updateReview)
+router.delete('/deleteReview/:formReviews', userController.delUserReview)
 module.exports = router

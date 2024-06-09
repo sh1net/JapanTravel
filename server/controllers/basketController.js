@@ -39,7 +39,7 @@ class BasketController {
             await UserBasketTour.destroy({where:{
                 id:basket_id
             }})
-            return res.json('Тур удален из корзины')
+            return res.json('Комбинированный тур удален из корзины')
             
         } catch (e) {
             return next(ApiError.badRequest(e.message));
@@ -53,6 +53,34 @@ class BasketController {
             const { id } = decodedToken;
 
             await UserBasketTour.destroy({where:{
+                userId:id,
+                status:false
+            }})
+            return res.json('Все комбинированные туры были удалены')
+        }catch(e){
+            return next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async removeComboFromBasket (req,res,next) {
+        try{
+            const {basket_id} = req.params;
+            await CombineTourBasket.destroy({where:{
+                id:basket_id
+            }})
+            return res.json('Тур удален из корзины')
+        }catch(e){
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async removeAllCombs(req,res,next) {
+        try{
+            const token = req.headers.authorization.split(' ')[1]; // Получаем токен пользователя
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+            const { id } = decodedToken;
+
+            await CombineTourBasket.destroy({where:{
                 userId:id,
                 status:false
             }})
