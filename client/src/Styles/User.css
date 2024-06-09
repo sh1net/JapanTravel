@@ -40,7 +40,7 @@
 .block_block_block{
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-around;
   border:1px solid white;
   padding:10px;

@@ -60,9 +60,9 @@ export const createReview = async (description,rate,tourId) => {
   }
 }
 
-export const payBasketTour = async (tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price) => {
+export const payBasketTour = async (tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price, name) => {
   try{
-    const {data} = await $authHost.patch('/api/tour/payTour', {tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price})
+    const {data} = await $authHost.patch('/api/tour/payTour', {tourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price, name})
     return data
   }catch(e){
     alert(e.response?.data.message || 'Произошла ошибка')

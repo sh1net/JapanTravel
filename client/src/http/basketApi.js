@@ -94,3 +94,21 @@ export const delAllTours = async() => {
         alert(e.response?.data.message || 'Произошла ошибка')
     }
 }
+
+export const delOneCombo = async (basket_id) => {
+    try{
+        const {data} = await $authHost.delete(`api/basket/dropCombo/${basket_id}`)
+        alert(data)
+    }catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
+export const delAllCombos = async () => {
+    try{
+        const {data} = await $authHost.delete('api/basket/dropCombos')
+        alert(data)
+    }catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}

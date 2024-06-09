@@ -2,12 +2,12 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { fetchAdminReviews } from "../http/adminApi";
 
 const initialState = {
-  tourReviews: [],
+  reviews: [],
   status: "idle",
   error: null,
 };
 
-export const fetchTourReviewsAsync = createAsyncThunk("reviews/fetchTourReviews", async () => {
+export const fetchReviewsAsync = createAsyncThunk("reviews/fetchTourReviews", async () => {
     try{
       const response = await fetchAdminReviews();
       return response;
@@ -23,12 +23,12 @@ const reviewsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers : (builder) => {
-    builder.addCase(fetchTourReviewsAsync.fulfilled, (state, action) => {
-      state.tourReviews = action.payload; // Обновляем отели напрямую
+    builder.addCase(fetchReviewsAsync.fulfilled, (state, action) => {
+      state.reviews = action.payload; // Обновляем отели напрямую
     });
   }
 });
 
-export const selectTourReviews = (state) => state.review.tourReviews;
+export const selectReviews = (state) => state.review.reviews;
 export const { addReview } = reviewsSlice.actions;
 export default reviewsSlice.reducer;

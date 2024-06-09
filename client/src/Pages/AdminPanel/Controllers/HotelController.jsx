@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import PhotoSlider2 from '../photoSlider/PhotoSlider2';
 import '../Styles/ControllerStyle.css'
@@ -8,17 +8,39 @@ import { deleteTour } from '../../../http/adminApi';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import {selectHotels,fetchHotelsAsync} from '../../../Redux/hotelSlice'
+import { deleteHotel, fetchOneHotel } from '../../../http/hotelApi';
+import HotelModal from '../Modals/HotelModal';
 
 function HotelController() {
 
   const hotels = useSelector(selectHotels)
   const dispatch = useDispatch()
+  const [hotel,setHotel] = useState()
+  const [isHotelModalOpen,setIsHotelModalOpen]= useState(false)
+  const [hotel_info,setHotel_info] = useState()
+  const [sortedArr, setSortedArr] = useState()
 
   useEffect(() => {
       dispatch(fetchHotelsAsync());
   }, [dispatch]);
 
-  const dropTour = async (id) => {
+  useEffect(() => {
+    const fetchHotelData = async () => {
+      try {
+        let result
+        if(hotel && hotel.id){
+          result = await fetchOneHotel(hotel.id);
+        }
+        setHotel_info(result);
+      } catch (error) {
+        console.error('Ошибка получения данных:', error);
+      }
+    };
+  
+    fetchHotelData();
+  }, [hotel?.id]);
+
+  const dropHotel = async (id) => {
     try{
       const confirm = await new Promise((resolve) => {
         confirmAlert({
@@ -37,7 +59,7 @@ function HotelController() {
         });
       });
       if(confirm){
-        const data = await deleteTour(id)
+        const data = await deleteHotel(id)
         if(data){
           alert(data)
           window.location.reload()
@@ -48,6 +70,22 @@ function HotelController() {
     }
   }
 
+  const closeModal = () => {
+    setIsHotelModalOpen(false);
+    setHotel(null)
+  };
+
+  const editHotel = (hotel) => {
+    setHotel(hotel);
+    setIsHotelModalOpen(true)
+  }
+
+  useEffect(()=>{
+    if (hotels.length > 0) {
+      const sortedHotels = [...hotels].sort((a, b) => a.id - b.id);
+      setSortedArr(sortedHotels);
+    }
+  },[hotels])
 
   return (
     <div>
@@ -55,6 +93,7 @@ function HotelController() {
         <table className='admin_table'>
           <thead>
             <tr>
+              <th>id</th>
               <th>Фото</th>
               <th>Название</th>
               <th>Рейтинг</th>
@@ -64,14 +103,15 @@ function HotelController() {
             </tr>
           </thead>
           <tbody>
-            {hotels && hotels.length>0 && hotels.map(hotel => {
+            {hotels && hotels.length>0 && sortedArr && sortedArr.length>0 && sortedArr.map(hotel => {
               return(
                 <tr key={hotel.id}>
+                  <td>{hotel.id}</td>
                   <td className='admin_photo_container'>
                     <PhotoSlider2 imgs={hotel.img}/>
                     <div className='admin_controller_toogle_container'>
-                      <button className='admin_controller_toogle_button' onClick={()=>dropTour(hotel.id)}><FaTrash/></button>
-                      <button className='admin_controller_toogle_button'><FaEdit /></button>
+                      <button className='admin_controller_toogle_button' onClick={()=>dropHotel(hotel.id)}><FaTrash/></button>
+                      <button className='admin_controller_toogle_button' onClick={()=>editHotel(hotel)}><FaEdit /></button>
                     </div>
                   </td>
                   <td>{hotel.name}</td>
@@ -84,6 +124,9 @@ function HotelController() {
           </tbody>
         </table>
       </div>
+      {isHotelModalOpen && 
+        <HotelModal closeModal={closeModal} isEdit={true} hotel={hotel} info={hotel_info}/>
+      }
     </div>
   )
 }

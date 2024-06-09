@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllUserReviews, selectUser, selectUserReviews, setIsAuth, setUser } from '../Redux/authSlice';
-import { checkPassword, getUserData, logout, updateUser } from '../http/userApi';
+import { checkPassword, destroyReview, getUserData, logout, updateUser } from '../http/userApi';
 import HeaderImage from "../Components/HeaderImage/HeaderImage"
 import EditIcon from "../Image/EditIcon.png"
 import { GiSamuraiHelmet } from "react-icons/gi";
@@ -142,12 +142,15 @@ const User = () => {
         formData.append('newPassword',updatedUser.newPassword)
       }
       if(nicknameError === '' && emailError === '' && oldPasswordError === '' && newPasswordError==='' && verifyPasswordError === ''){
-        await updateUser(formData);
-        setIsModalOpen(false);
-        setNewImageFile(null);
-        setImageFile(null);
-        setIsPassUpdated(false);
-        window.location.reload();
+        const data = await updateUser(formData);
+        if(data && data!=='Пользователь с такой почтой уже существует' && data!=='Новый пороль слишком короткий (мин.8)'){
+          alert(data)
+          setIsModalOpen(false);
+          setNewImageFile(null);
+          setImageFile(null);
+          setIsPassUpdated(false);
+          window.location.reload()
+        }
       }
       
     } catch (e) {
@@ -278,6 +281,41 @@ useEffect(() => {
   dispatch(getAllUserReviews())
 }, [dispatch]);
 
+const [formReview,setFormReview] = useState({
+  tourId:'',
+  hotelId:'',
+  combinedTourId:'',
+  reviewId:''
+})
+
+const dropReview = async (review) => {
+  let updatedFormReview = { ...formReview };
+
+  if (review.tourInfoId) {
+    updatedFormReview.tourId = review.tourInfoId;
+    updatedFormReview.reviewId = review.id;
+  }
+  if (review.hotelInfoId) {
+    updatedFormReview.hotelId = review.hotelInfoId;
+    updatedFormReview.reviewId = review.id;
+  }
+  if (review.combinedTourId) {
+    updatedFormReview.combinedTourId = review.combinedTourId;
+    updatedFormReview.reviewId = review.id;
+  }
+
+  try {
+    console.log(updatedFormReview)
+    const data = await destroyReview(JSON.stringify(updatedFormReview));
+    if (data) {
+      alert(data);
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error('Error deleting review:', error);
+  }
+}
+
   return (
     <div className='user_page_container'>
       <HeaderImage blurBackground={true}>
@@ -333,7 +371,7 @@ useEffect(() => {
               <div className='reviews_container'>
                 {userReviews.map((review,index) => {
                   return(
-                    <div className='flex_jesko'>
+                    <div className='flex_jesko' key={index}>
                       <div key={review.id} className='review_item user_review'>
                         <div style={{display:'flex',flexDirection:'row', justifyContent:'space-between'}}>
                           <Rating name="read-only" value={review.rate} size="large" readOnly />
@@ -346,7 +384,7 @@ useEffect(() => {
                         </div>
                         <hr></hr>
                       </div>
-                      <button className='admin_controller_toogle_button'><FaTrash/></button>
+                      <button className='admin_controller_toogle_button' onClick={()=>dropReview(review)}><FaTrash/></button>
                     </div>
                   )
                 })}
@@ -364,7 +402,6 @@ useEffect(() => {
                 <h1 style={{color:'white',margin:'0',padding:'0'}}>История покупок Отелей</h1>
                 <div className='history_page_container'>                  
                   {basketHotels && basketHotels.length>0 && basketHotels.map(item => {
-                    const hotel = hotels.find(h => h.id === item.hotelId);
                     const formattedDateIn = item.date_in ? new Date(item.date_in).toLocaleDateString('ru-RU') : '';
                     const formattedDateOut = item.date_out ? new Date(item.date_out).toLocaleDateString('ru-RU') : '';
                     const formattedDateRange = formattedDateIn && formattedDateOut ? `${formattedDateIn} - ${formattedDateOut}` : '';
@@ -373,7 +410,7 @@ useEffect(() => {
                       <div key={item.id} className='history_page_item'>
                           <div onClick={() => toggleExpand(item.id)}  className='history_page_summary'>
                             <div>
-                                <p>{hotel ? hotel.name : 'не определено'}</p>
+                                <p>{item.name.length>0 ? item.name : 'не определено'}</p>
                                 <p>{formattedDateRange}</p>
                             </div>
                             <div className='chevron_icon'>
@@ -383,7 +420,7 @@ useEffect(() => {
                           {isExpanded && (
                             <>
                             <div className='extra_info' ref={componentRef}>
-                              <p>{hotel ? hotel.name : 'не определено'}</p>
+                              <p>{item.name.length>0 ? item.name : 'не определено'}</p>
                               <p>{formattedDateRange}</p>
                               <p>ФИО: {item.fullName.join(' ')}</p>
                               <p>Всего билетов: {item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)} (Детские: {item.count[1]})</p>
@@ -418,14 +455,13 @@ useEffect(() => {
                 <h1 style={{color:'white'}}>История покупок Достопримечательностей</h1>
                 <div className='history_page_container'>
                   {basketTours && basketTours.length>0 && basketTours.map(item => {
-                    const tour = tours.find(t => t.id === item.tourId);
                     const formattedDate = item.date ? new Date(item.date).toLocaleDateString('ru-RU') : '';
                     const isExpanded = expandedItemId === item.id;
                     return (
                       <div key={item.id} className='history_page_item'>
                           <div onClick={() => toggleExpand(item.id)}  className='history_page_summary'>
                             <div>
-                                <p>{tour ? tour.name : 'не определено'}</p>
+                                <p>{item.name.length>0 ? item.name : 'не определено'}</p>
                                 <p>{formattedDate}</p>
                             </div>
                             <div className='chevron_icon'>
@@ -435,7 +471,7 @@ useEffect(() => {
                           {isExpanded && (
                             <>
                             <div className='extra_info' ref={componentRef}>
-                              <p>{tour ? tour.name : 'не определено'}</p>
+                              <p>{item.name.length>0 ? item.name : 'не определено'}</p>
                               <p>{formattedDate}</p>
                               <p>ФИО: {item.fullName.join(' ')}</p>
                               <p>Всего билетов: {item.count.reduce((accumulator, currentValue) => accumulator + currentValue, 0)} (Детские: {item.count[1]})</p>
@@ -469,6 +505,7 @@ useEffect(() => {
                 <h1 style={{color:'white'}}>История покупок Туров</h1>
                 <div className='history_page_container'>
                   {basketCombo && basketCombo.length>0 && basketCombo.map((item) => {
+                    console.log(item)
                     const combo = combos.find(h => h.id === item.combinedTourId);
                     const formattedDateIn = item.date_in ? new Date(item.date_in).toLocaleDateString('ru-RU') : '';
                     const formattedDateOut = item.date_out ? new Date(item.date_out).toLocaleDateString('ru-RU') : '';
@@ -478,7 +515,7 @@ useEffect(() => {
                       <div key={item.id} className='history_page_item'>
                           <div onClick={() => toggleExpand(item.id)}  className='history_page_summary'>
                             <div>
-                                <p>{combo?.hotel?.name ? combo.hotel.name : 'не определено'}</p>
+                                <p>{item?.hotelName ? item.hotelName : 'не определено'}</p>
                                 <p>{formattedDateRange}</p>
                             </div>
                             <div className='chevron_icon'>
@@ -488,12 +525,12 @@ useEffect(() => {
                           {isExpanded && (
                             <>
                             <div className='extra_info' ref={componentRef}>
-                              <p style={{fontSize:'20px'}}>{combo?.hotel?.name ? combo.hotel.name : 'не определено'}</p>
+                              <p style={{fontSize:'20px'}}>{item?.hotelName ? item.hotelName : 'не определено'}</p>
                               <p style={{fontSize:'20px'}}>{formattedDateRange}</p>
-                              {combo.tours.map((tour, index) => {
+                              {item.tourNames.map((tour, index) => {
                                 const tourDate = new Date(item.date[index]).toLocaleDateString('ru-RU');
                                 return (
-                                  <p key={index} style={{fontSize:'20px'}}>{tour.name}: {tourDate}</p>
+                                  <p key={index} style={{fontSize:'20px'}}>{tour}: {tourDate}</p>
                                 );
                               })}
                               <p>ФИО: {item.fullName.join(' ')}</p>
@@ -523,6 +560,11 @@ useEffect(() => {
                     );
                   })}              
                 </div>
+              </>
+            )}
+            {basketHotels.length === 0 && basketTours.length === 0 && basketCombo.length === 0 && (
+              <>
+                <h1 style={{color:'white'}}>История чиста</h1>
               </>
             )}
           </div>

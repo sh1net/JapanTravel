@@ -52,7 +52,7 @@ function HotelAbout() {
         totalKidsPrice = hotel.price * kidsCount * 0.55;
       }      
       const totalAdultPrice = hotel.price * count;
-      setPrice(totalKidsPrice + totalAdultPrice);
+      setPrice(parseInt(totalKidsPrice + totalAdultPrice));
     }
     
   },[kidsCount,count,showKids])
@@ -64,8 +64,8 @@ function HotelAbout() {
           const roomsCount = count+kidsCount
           const data = await checkData(id, dateRange[0], dateRange[1], roomsCount);
           setIsCor(data);
-        } catch (e) {
-          console.log('Error fetching data:', e.message);
+        } catch (error) {
+          console.error('Ошибка получения данных:', error);
         }
       };
       fetchData();
@@ -215,17 +215,17 @@ function HotelAbout() {
 
   const addToCart = async () => {
     try {
-      if (formattedDateRange && count && selectedNumbers && kidsCount) {
+      if (formattedDateRange && count && selectedNumbers || kidsCount) {
         if (selectedNumbers.reduce((sum,current) => {
           return sum+current[1]
-        },0) === (count + kidsCount)) {
+        },0) >= (count + kidsCount)) {
           const dates = formattedDateRange.split(' - ')
           const dateIn = ConvertDates(dates[0])
           const dateOut = ConvertDates(dates[1])
           const hotelCount = [count,kidsCount].join(',')
           const data = await addHotelToCart(id, dateIn, dateOut, selectedNumbers, hotelCount,price)
           if(data){
-            alert('Успешно')
+            alert(data)
             closeModal()
           }
         }
@@ -349,7 +349,7 @@ function HotelAbout() {
                     <hr></hr>
                   </div>))
                 ) : (
-                  <h2 style={{color:'black'}}>Оствьте первый отзыв!</h2>)}
+                  <h2 style={{color:'black'}}>Оставьте первый отзыв!</h2>)}
               </div>
             </div>      
           </>
@@ -442,7 +442,7 @@ function HotelAbout() {
                                 <HotelNumberPicker selectedNumbers={selectedNumbers} onSelect={handleNumberSelect} rooms={isCor.rooms} count={count}/>
                                 {(selectedNumbers && selectedNumbers.reduce((sum,current) => {
                                   return sum+current[1]
-                                },0) === (count + kidsCount)) && (
+                                },0) >= (count + kidsCount)) && (
                                   <>
                                     <div style={{display:'flex', flexDirection:'row', alignItems:'center',justifyContent:'space-between'}}>
                                       <p style={{margin:'0'}}>Стоимость : {price>0?price : hotel.price}</p>

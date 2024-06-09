@@ -36,9 +36,9 @@ export const checkPassword = async (oldPassword) => {
 export const updateUser = async (updatedUser) => {
     try {
         const { data } = await $authHost.patch('/api/user/update', updatedUser);
-        console.log(data);
+        return data
     } catch (e) {
-        console.error("Ошибка при обновлении пользователя:", e.message);
+        alert(e.response?.data.message || 'Произошла ошибка');
     }
 }
 
@@ -75,3 +75,12 @@ export const logout = () => {
     localStorage.removeItem('role')
 }
   
+export const destroyReview = async (formReviews) => {
+    try{
+        console.log('Api form: ',formReviews)
+        const {data} = await $authHost.delete(`api/user/deleteReview/${formReviews}`)
+        return data
+    }catch(e){
+        alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}

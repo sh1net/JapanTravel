@@ -19,6 +19,7 @@ function TourController() {
   const [tour,setTour] = useState()
 
   const [tour_info,setTour_info] = useState()
+  const [sortedArr, setSortedArr] = useState()
 
   useEffect(() => {
       dispatch(fetchToursAsync());
@@ -80,7 +81,12 @@ function TourController() {
     }
   }
 
-  
+  useEffect(()=>{
+    if (tours.length > 0) {
+      const sortedTours = [...tours].sort((a, b) => a.id - b.id);
+      setSortedArr(sortedTours);
+    }
+  },[tours])
 
   return (
     <div>
@@ -88,6 +94,7 @@ function TourController() {
         <table className='admin_table'>
           <thead>
             <tr>
+              <th>id</th>
               <th>Фото</th>
               <th>Название</th>
               <th>Рейтинг</th>
@@ -97,9 +104,10 @@ function TourController() {
             </tr>
           </thead>
           <tbody>
-            {tours && tours.length>0 && tours.map(tour => {
+            {tours && tours.length>0 && sortedArr && sortedArr.length>0 && sortedArr.map(tour => {
               return(
                 <tr key={tour.id}>
+                  <td>{tour.id}</td>
                   <td className='admin_photo_container'>
                     <PhotoSlider2 imgs={tour.img}/>
                     <div className='admin_controller_toogle_container'>

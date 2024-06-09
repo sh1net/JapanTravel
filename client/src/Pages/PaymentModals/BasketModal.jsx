@@ -248,21 +248,22 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
                 return
             }else if(type==='tour'){
                 const fullName = [firstName,fName,lastName]
-                const data = await payBasketTour(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price)
+                const data = await payBasketTour(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price,item.name)
                 if(data){
                     alert(data)
                     window.location.reload()
                 }
             }else if(type==='hotel'){
                 const fullName = [firstName,fName,lastName]
-                const data = await BuyOneHotel(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price)
+                const data = await BuyOneHotel(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price, item.name)
                 if(data){
                     alert(data)
                     window.location.reload()
                 }
             }else if(type === 'combo'){
                 const fullName = [firstName,fName,lastName]
-                const data = await payBasketCombo(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price)
+                const tourNames = item.tours.map(item => item.name)
+                const data = await payBasketCombo(item.id,fullName.join(','),phoneNumber,pasportNumber,taxi,guide,helper,basket.id, price, item.hotel.name,tourNames)
                 if(data){
                     alert(data)
                     window.location.reload()
@@ -328,7 +329,7 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
                     <div style={{margin:'10px 18px'}}>
                         <CustomTextField onSend={handlePasportNumber} error={pasportNumberError} helperText={helperText} header='Идентификационный номер паспорта' value={pasportNumber} type={'text'}/>
                     </div>
-                    <p className='paspNum_primer'>Пример номера паспорта: 5010104A001РВ1</p>
+                    <p className='paspNum_primer'>Пример номера паспорта: 5010104A001PB1</p>
                 </div>
             </div>
             <div className='dop_uslugi_container_question'>
@@ -383,6 +384,7 @@ function BasketModal({ isOpen, onClose,type, item, basket }) {
                 <div className='basketModal_dop_info'>
                     <div style={{margin:'10px 18px',width:'160px'}}>
                         <CustomTextField onSend={handleDateCard} error={dateCardError} helperText={helperText} header='Срок действия' value={dateCard} type={'text'}/>
+                        <p className='paspNum_primer' style={{margin:'0'}}>Пример даты: 01/25</p>
                     </div>
                     <div style={{margin:'10px 18px',width:'100px'}}>
                         <CustomTextField onSend={handleCVC} error={CVCError} helperText={helperText} header='CVC/CVV' value={CVC} type={'password'}/>

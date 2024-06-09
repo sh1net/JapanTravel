@@ -12,10 +12,8 @@ function Footer() {
         <div className='footer_contacts_container'>
             <span>+375 (44) 578-14-41</span>
             <span>Belarus, Minsk 220055</span>
-            <span>primer@gmail.com</span>
-            <span>+375 (44) 578-14-41</span>
-            <span>Belarus, Minsk 220055</span>
-            <span>primer@gmail.com</span>
+            <span>mustashev168@gmail.com</span>
+            <span>artemworkmust@gmail.com</span>
         </div>
         <div className='footer_links_container'>
             <NavLink to="/">Главная</NavLink>

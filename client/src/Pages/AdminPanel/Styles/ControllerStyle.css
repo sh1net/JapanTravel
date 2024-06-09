@@ -21,6 +21,9 @@
     vertical-align: middle;
     border-top: 1px solid #353535;
     border-bottom: 1px solid #353535;
+	position:sticky;
+	top:97px;
+	z-index:100;
 }
 .admin_table tbody td {
 	text-align:justify;

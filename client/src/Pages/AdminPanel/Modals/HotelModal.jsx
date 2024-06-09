@@ -3,11 +3,28 @@ import CustomTextField from '../../../Components/mui/CustomTextField'
 import CustomFileUpload from '../../../Components/mui/CustomFileUpload'
 import CheckMapLocation from '../../../Components/GoogleMaps/CheckMapLocation'
 import '../Styles/AdminModal.css'
-import { createTours, update } from '../../../http/adminApi'
+import { createHotel, updateHotel } from '../../../http/hotelApi'
 
-function TourModal({closeModal, isEdit, tour, info}) {
+function HotelModal({closeModal, isEdit, hotel, info}) {
 
     const [isModalOpen, setIsModalOpen] = useState(true);
+    const [hotelNameError,setHotelNameError] = useState(false)
+    const [hotelCityError,setHotelCityError] = useState(false)
+    const [hotelPriceError,setHotelPriceError] = useState(false)
+    const [hotelInfoError,setHotelInfoError] = useState(false)
+    const [hotelLocationLatError,setHotelLocationLatError] = useState(false)
+    const [hotelLocationLngError,setHotelLocationLngError] = useState(false)
+    const [helperText,setHelperText] = useState('')
+    const [hotelName, setHotelName] = useState('')
+    const [hotelCity, setHotelCity] = useState('')
+    const [hotelPrice, setHotelPrice] = useState('')
+    const [hotelInfo, setHotelInfo] = useState('')
+    const [hotelLocationLat,setHotelLocationLat] =useState('')
+    const [hotelLocationLng,setHotelLocationLng] =useState('')   
+
+    const [imageFile, setImageFile] = useState([]);
+    const [newImageFile, setNewImageFile] = useState([])
+    const [oldImageFile,setOldImageFile] = useState('')
 
     useEffect(() => {
         if (isModalOpen) {
@@ -21,85 +38,68 @@ function TourModal({closeModal, isEdit, tour, info}) {
         };
     }, [isModalOpen]);
 
-    const [tourNameError,setTourNameError] = useState(false)
-    const [tourCityError,setTourCityError] = useState(false)
-    const [tourPriceError,setTourPriceError] = useState(false)
-    const [tourInfoError,setTourInfoError] = useState(false)
-    const [tourLocationLatError,setTourLocationLatError] = useState(false)
-    const [tourLocationLngError,setTourLocationLngError] = useState(false)
-    const [helperText,setHelperText] = useState('')
-
-    const [imageFile, setImageFile] = useState([]);
-    const [newImageFile, setNewImageFile] = useState([])
-    const [oldImageFile,setOldImageFile] = useState('')
-
     useEffect(() => {
-        if (isEdit && tour && info) {
-          setTourName(tour.name);
-          setTourCity(tour.city);
-          setTourPrice(tour.price);
-          setTourInfo(info.info[0].description);
-          setTourLocationLat(tour.location[0]);
-          setTourLocationLng(tour.location[1]);
-          setOldImageFile(tour.img);
+        if (isEdit && hotel && info) {
+          setHotelName(hotel.name);
+          setHotelCity(hotel.city);
+          setHotelPrice(hotel.price);
+          setHotelInfo(info.info[0].description);
+          setHotelLocationLat(hotel.location[0]);
+          setHotelLocationLng(hotel.location[1]);
+          setOldImageFile(hotel.img);
         }
-    }, [isEdit, tour, info]);
-    
-    const [tourName, setTourName] = useState('')
-    const handleTourName = (text) => {
-        setTourNameError(false)
+    }, [isEdit, hotel, info]);
+
+    const handleHotelName = (text) => {
+        setHotelNameError(false)
         setHelperText(false)
-        setTourName(text)
+        setHotelName(text)
     }
-    const [tourCity, setTourCity] = useState('')
-    const handleTourCity = (text) => {
-        setTourCityError(false)
+    const handleHotelCity = (text) => {
+        setHotelCityError(false)
         setHelperText(false)
-        setTourCity(text)
+        setHotelCity(text)
     }
-    const [tourPrice, setTourPrice] = useState('')
-    const handleTourPrice = (text) => {
-        setTourPriceError(false)
+    const handleHotelPrice = (text) => {
+        setHotelPriceError(false)
         setHelperText(false)
-        setTourPrice(text)
+        setHotelPrice(text)
     }
-    const [tourInfo, setTourInfo] = useState('')
-    const handleTourInfo = (text) => {
-        setTourInfoError(false)
+    const handleHotelInfo = (text) => {
+        setHotelInfoError(false)
         setHelperText(false)
-        setTourInfo(text)
+        setHotelInfo(text)
     }
-    const [tourLocationLat,setTourLocationLat] =useState('')
-    const [tourLocationLng,setTourLocationLng] =useState('')
-    const handleTourLocation_lat = (text) => {
-        setTourLocationLatError(false)
+    const handleHotelLocation_lat = (text) => {
+        setHotelLocationLatError(false)
         setHelperText(false)
-        setTourLocationLat(text);
+        setHotelLocationLat(text);
     }
-    const handleTourLocation_lng = (text) => {
-        setTourLocationLngError(false)
+    const handleHotelLocation_lng = (text) => {
+        setHotelLocationLngError(false)
         setHelperText(false)
-        setTourLocationLng(text);
+        setHotelLocationLng(text)
     }
+
     const checkError = () => {
         let hasError = false
-        if(!tourName || tourName===''){
-            setTourNameError(true)
+        if(!hotelName || hotelName===''){
+            setHotelNameError(true)
             hasError = true;
-        }if(!tourCity || tourCity===''){
-            setTourCityError(true)
+        }if(!hotelCity || hotelCity===''){
+            setHotelCityError(true)
             hasError = true;
-        }if(!tourPrice || tourPrice.length<0){
-            setTourPriceError(true)
+        }if(!hotelPrice || hotelPrice.length<0){
+            setHotelPriceError(true)
             hasError = true;
-        }if(!tourInfo || tourInfo===''){
-            setTourInfoError(true)
+        }if(!hotelInfo || hotelInfo===''){
+            setHotelInfoError(true)
             hasError = true;
-        }if(!tourLocationLat || tourLocationLat.length<0){
-            setTourLocationLatError(true)
+        }if(!hotelLocationLat || hotelLocationLat.length<0){
+            setHotelLocationLatError(true)
             hasError = true;
-        }if(!tourLocationLng || tourLocationLng.length<0){
-            setTourLocationLngError(true)
+        }if(!hotelLocationLng || hotelLocationLng.length<0){
+            setHotelLocationLngError(true)
             hasError = true;
         }if(!hasError){
             return hasError
@@ -131,7 +131,7 @@ function TourModal({closeModal, isEdit, tour, info}) {
         setOldImageFile(updatedImages)
     }
 
-    const createTour = async () => {
+    const createHotel_1 = async () => {
         try{
             const isError = checkError()
             if(isError){
@@ -139,18 +139,17 @@ function TourModal({closeModal, isEdit, tour, info}) {
             }
             if(!isError){
                 const formData = new FormData()
-                formData.append('name', tourName);
-                formData.append('info', tourInfo);
-                formData.append('city', tourCity);
-                formData.append('price', tourPrice);
+                formData.append('name', hotelName);
+                formData.append('description', hotelInfo);
+                formData.append('city', hotelCity);
+                formData.append('price', hotelPrice);
                 imageFile.forEach(file => {
                     formData.append('img', file);
                 });  
-                const   coordinates = [tourLocationLat,tourLocationLng]                 
+                const   coordinates = [hotelLocationLat,hotelLocationLng]                 
                 const coordinatesString = coordinates.join(',');
                 formData.append('coordinates', coordinatesString);
-
-                const data = await createTours(formData)
+                const data = await createHotel(formData)
                 if(data){
                     alert(data)
                     window.location.reload()
@@ -161,7 +160,7 @@ function TourModal({closeModal, isEdit, tour, info}) {
         }
     }
 
-    const updateTour = async () => {
+    const updateHotel_1 = async () => {
         try{
             const isError = checkError()
             if(isError){
@@ -169,18 +168,18 @@ function TourModal({closeModal, isEdit, tour, info}) {
             }
             if(!isError){
                 const formData = new FormData()
-                formData.append('id',tour.id)
-                formData.append('name', tourName);
-                formData.append('info', tourInfo);
-                formData.append('city', tourCity);
-                formData.append('price', tourPrice);
+                formData.append('id',hotel.id)
+                formData.append('name', hotelName);
+                formData.append('info', hotelInfo);
+                formData.append('city', hotelCity);
+                formData.append('price', hotelPrice);
                 formData.append('oldImgs', oldImageFile)
                 imageFile.forEach(file => {
                     formData.append('img', file);
                 });   
-                const   coordinates = [tourLocationLat,tourLocationLng]                 
+                const   coordinates = [hotelLocationLat,hotelLocationLng]                 
                 formData.append('coordinates', coordinates);
-                const data = await update(formData)
+                const data = await updateHotel(formData)
                 if(data){
                     alert('Успешно')
                     window.location.reload()
@@ -203,25 +202,25 @@ function TourModal({closeModal, isEdit, tour, info}) {
             <div className='admin_write_data'>
                 <div className='admin_form_data'>
                     <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleTourName} error={tourNameError} helperText={helperText} header='Название тура' value={tourName}/>
+                        <CustomTextField onSend={handleHotelName} error={hotelNameError} helperText={helperText} header='Название отеля' value={hotelName}/>
                     </div>
                     <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleTourCity} error={tourCityError} helperText={helperText} header='Город' value={tourCity}/>
+                        <CustomTextField onSend={handleHotelCity} error={hotelCityError} helperText={helperText} header='Город' value={hotelCity}/>
                     </div>
                     <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleTourPrice} error={tourPriceError} helperText={helperText} header='Цена за билет' value={tourPrice} type={'number'}/>
+                        <CustomTextField onSend={handleHotelPrice} error={hotelPriceError} helperText={helperText} header='Цена за билет' value={hotelPrice} type={'number'}/>
                     </div>
                 </div>
                 <div style={{margin:'10px 18px'}}>
-                    <CheckMapLocation location={[tourLocationLat,tourLocationLng]} name={tourName}/>
+                    <CheckMapLocation location={[hotelLocationLat,hotelLocationLng]} name={hotelName}/>
                 </div>
             </div> 
             <div className='admin_lat_lng_setter'>
-                <CustomTextField onSend={handleTourLocation_lat} error={tourLocationLatError} helperText={helperText} header='Широта' value={tourLocationLat} type={'number'}/>
-                <CustomTextField onSend={handleTourLocation_lng} error={tourLocationLngError} helperText={helperText} header='Долгота' value={tourLocationLng} type={'number'}/>
+                <CustomTextField onSend={handleHotelLocation_lat} error={hotelLocationLatError} helperText={helperText} header='Широта' value={hotelLocationLat} type={'number'}/>
+                <CustomTextField onSend={handleHotelLocation_lng} error={hotelLocationLngError} helperText={helperText} header='Долгота' value={hotelLocationLng} type={'number'}/>
             </div>
             <div style={{margin:'10px 18px'}} className='admin_form_data'>
-                <CustomTextField onSend={handleTourInfo} error={tourInfoError} isMulti={true} helperText={helperText} header='Описание тура' value={tourInfo}/>
+                <CustomTextField onSend={handleHotelInfo} error={hotelInfoError} isMulti={true} helperText={helperText} header='Описание отеля' value={hotelInfo}/>
             </div>
             <div style={{margin:'10px 18px'}}>
                 <CustomFileUpload onChange={handleImageChange}/>
@@ -234,7 +233,7 @@ function TourModal({closeModal, isEdit, tour, info}) {
                     </div>
                 ))}
             </div>          
-            <button className='admin_modal_accept' onClick={createTour}>Создать</button>
+            <button className='admin_modal_accept' onClick={createHotel_1}>Создать</button>
             </div>
         </div>
         :
@@ -247,25 +246,25 @@ function TourModal({closeModal, isEdit, tour, info}) {
             <div className='admin_write_data'>
                 <div className='admin_form_data'>
                     <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleTourName} error={tourNameError} helperText={helperText} header='Название тура' value={tourName}/>
+                        <CustomTextField onSend={handleHotelName} error={hotelNameError} helperText={helperText} header='Название отеля' value={hotelName}/>
                     </div>
                     <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleTourCity} error={tourCityError} helperText={helperText} header='Город' value={tourCity}/>
+                        <CustomTextField onSend={handleHotelCity} error={hotelCityError} helperText={helperText} header='Город' value={hotelCity}/>
                     </div>
                     <div style={{margin:'10px 18px'}}>
-                        <CustomTextField onSend={handleTourPrice} error={tourPriceError} helperText={helperText} header='Цена за билет' value={tourPrice} type={'number'}/>
+                        <CustomTextField onSend={handleHotelPrice} error={hotelPriceError} helperText={helperText} header='Цена за билет' value={hotelPrice} type={'number'}/>
                     </div>
                 </div>
                 <div style={{margin:'10px 18px'}}>
-                    <CheckMapLocation location={[tourLocationLat,tourLocationLng]} name={tourName}/>
+                    <CheckMapLocation location={[hotelLocationLat,hotelLocationLng]} name={hotelName}/>
                 </div>
             </div> 
             <div className='admin_lat_lng_setter' style={{margin:'10px 18px'}}>
-                <CustomTextField onSend={handleTourLocation_lat} error={tourLocationLatError} helperText={helperText} header='Широта' value={tourLocationLat} type={'number'}/>
-                <CustomTextField onSend={handleTourLocation_lng} error={tourLocationLngError} helperText={helperText} header='Долгота' value={tourLocationLng} type={'number'}/>
+                <CustomTextField onSend={handleHotelLocation_lat} error={hotelLocationLatError} helperText={helperText} header='Широта' value={hotelLocationLat} type={'number'}/>
+                <CustomTextField onSend={handleHotelLocation_lng} error={hotelLocationLngError} helperText={helperText} header='Долгота' value={hotelLocationLng} type={'number'}/>
             </div>
             <div style={{margin:'10px 18px'}} className='admin_form_data'>
-                <CustomTextField onSend={handleTourInfo} error={tourInfoError} isMulti={true} helperText={helperText} header='Описание тура' value={tourInfo}/>
+                <CustomTextField onSend={handleHotelInfo} error={hotelInfoError} isMulti={true} helperText={helperText} header='Описание отеля' value={hotelInfo}/>
             </div>
             <div style={{margin:'10px 18px'}}>
                 <CustomFileUpload onChange={handleImageChange}/>
@@ -284,7 +283,7 @@ function TourModal({closeModal, isEdit, tour, info}) {
                     </div>
                 ))}
             </div>          
-            <button className='admin_modal_accept' onClick={updateTour}>Изменить</button>
+            <button className='admin_modal_accept' onClick={updateHotel_1}>Изменить</button>
             </div>
         </div>
         }
@@ -292,4 +291,4 @@ function TourModal({closeModal, isEdit, tour, info}) {
   )
 }
 
-export default TourModal
+export default HotelModal

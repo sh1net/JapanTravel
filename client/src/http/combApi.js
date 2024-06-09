@@ -3,7 +3,6 @@ import { $authHost, $host } from ".";
 export const fetchCombs = async () => {
     try{
         const { data } = await $host.get('api/combTour');
-
         return data
         
     }catch(e){
@@ -49,6 +48,7 @@ export const checkCombData = async (date_in, date_out, dateOfTours, tourIds, hot
 
 export const addCombToBasket = async (comboId, countArr, date, date_in, date_out, price, rooms) => {
     try{
+        console.log({comboId, countArr, date, date_in, date_out, price, rooms})
         const {data} = await $authHost.post('api/combtour/combBasket', {comboId, countArr, date, date_in, date_out, price, rooms})
         return data
     }catch(e){
@@ -56,11 +56,29 @@ export const addCombToBasket = async (comboId, countArr, date, date_in, date_out
     }
 }
 
-export const payBasketCombo = async (comboTourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price) => {
+export const payBasketCombo = async (comboTourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price, hotelName, tourNames) => {
     try{
-      const {data} = await $authHost.patch('/api/combtour/payCombo', {comboTourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price})
+      const {data} = await $authHost.patch('/api/combtour/payCombo', {comboTourId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price, hotelName, tourNames})
       return data
     }catch(e){
       alert(e.response?.data.message || 'Произошла ошибка')
     }
-  }
+}
+
+export const createComboTour = async (tourId,hotelId) => {
+    try{
+      const {data} = await $authHost.post('/api/combtour', {tourId,hotelId})
+      return data
+    }catch(e){
+      alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}
+
+export const deleteComboTour = async (comboTourId) => {
+    try{
+      const {data} = await $authHost.delete(`/api/combtour/${comboTourId}`)
+      return data
+    }catch(e){
+      alert(e.response?.data.message || 'Произошла ошибка')
+    }
+}

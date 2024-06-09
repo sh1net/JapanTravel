@@ -62,6 +62,7 @@
     grid-template-columns:repeat(4,1fr);
     width: 100%;
     margin-top: 40px;
+    justify-items: center;
 }
 
 .grid-item img{
@@ -197,7 +198,7 @@ a{
 }
 
 .all_item_tours_container{
-    width:80%;
+    width:100%;
 }
 
 .filters_text{

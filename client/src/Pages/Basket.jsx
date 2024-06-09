@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Rating from '@mui/material/Rating';
 import '../Styles/Basket.css';
-import { delAllHotels, delAllTours, delOneHotel, delOneTour, fetchBasketCombo, fetchBasketHotel, fetchBasketTour } from '../http/basketApi';
+import { delAllCombos, delAllHotels, delAllTours, delOneCombo, delOneHotel, delOneTour, fetchBasketCombo, fetchBasketHotel, fetchBasketTour } from '../http/basketApi';
 import { Link } from 'react-router-dom';
 import { HOTELABOUT_ROUTE, TOURABOUT_ROUTE } from '../utils/consts';
 import { useDispatch, useSelector } from 'react-redux';
@@ -71,6 +71,16 @@ function Basket() {
 
   const dellAllTours =async() => {
     await delAllTours()
+    window.location.reload();
+  }
+
+  const delOneComboTour = async (id) => {
+    await delOneCombo(id)
+    window.location.reload();
+  }
+
+  const dellAllComboTours = async () => {
+    await delAllCombos()
     window.location.reload();
   }
 
@@ -180,7 +190,7 @@ function Basket() {
       ?
       <><div className='basket_name_container'>
       <h1>Комбо</h1>
-      <button className='basket_name_button'>Удалить все</button>
+      <button className='basket_name_button' onClick={()=>dellAllComboTours()}>Удалить все</button>
     </div>
     <div className='hotels_basket_container'>
     {basketTour.map((item) => {
@@ -209,7 +219,7 @@ function Basket() {
             })}
           </div>
           <div className='buttons_handlers_container'>
-            <button style={{marginLeft:'0'}} onClick={()=> dellOneTour(item.id)}>Удалить</button>
+            <button style={{marginLeft:'0'}} onClick={()=> delOneComboTour(item.id)}>Удалить</button>
             <div className='payment_block'>
               <p className='pay_p'>{item.price}</p>
               <button key={item.id} onClick={() => openModal('combo',combo,item)}>Оплатить</button>

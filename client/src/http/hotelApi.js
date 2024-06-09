@@ -33,18 +33,13 @@ export const addHotelToCart = async (hotelId, date_in, date_out, rooms, hotelCou
   }
 }
 
-export const BuyOneHotel = async (hotelId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price) => {
+export const BuyOneHotel = async (hotelId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price, hotelName) => {
   try{
-      const {data} = await $authHost.patch('api/hotel/payBasketElem', {hotelId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price})
-      alert(data)
+      const {data} = await $authHost.patch('api/hotel/payBasketElem', {hotelId, fullName, phoneNumber, pasportNumber, taxi, guide, help, basketId, price, hotelName})
+      return data
   }catch(e){
       alert(e.response?.data.message || 'Произошла ошибка')
   }
-}
-
-export const createHotel = async (hotel) =>{
-    const {data} = await $authHost.post('api/hotel')
-    return data
 }
 
 export const checkData = async (hotelId, date_in, date_out, count) => {
@@ -54,7 +49,7 @@ export const checkData = async (hotelId, date_in, date_out, count) => {
       return data
     }
   }catch(e){
-    console(e.response?.data.message || 'Произошла ошибка')
+    console.log(e.response?.data.message || 'Произошла ошибка')
   }
 }
 
@@ -69,8 +64,36 @@ export const fetchHotelReviews = async (id) => {
 
 export const createHotelReview = async (description, rate, hotelId) => {
   try{
-    const {data} = $authHost.post('api/hotel/review', {description, rate, hotelId})
+    const {data} = await $authHost.post('api/hotel/review', {description, rate, hotelId})
     alert(data)
+  }catch(e){
+    alert(e.response?.data.message || 'Произошла ошибка')
+  }
+}
+
+export const createHotel = async (hotel) =>{
+  try {
+    const {data} = await $authHost.post('api/hotel', hotel)
+    return data
+  } 
+  catch (e) {
+    alert(e.response?.data.message || 'Произошла ошибка')
+  }
+}
+
+export const deleteHotel = async (hotel_id) => {
+  try{
+    const {data} = await $authHost.delete(`api/hotel/dropHotel/${hotel_id}`)
+    return data
+  }catch(e){
+    alert(e.response?.data.message || 'Произошла ошибка')
+  }
+}
+
+export const updateHotel = async (data) => {
+  try{
+    const result = await $authHost.patch('/api/hotel/updateHotel', data)
+    return result
   }catch(e){
     alert(e.response?.data.message || 'Произошла ошибка')
   }

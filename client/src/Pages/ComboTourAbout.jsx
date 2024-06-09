@@ -20,7 +20,6 @@ function ComboTourAbout() {
   const [combTour, setCombTour] = useState();
   const [isServicesVisible, setIsServicesVisible] = useState(false);
   const [reviews,setReviews] = useState([])
-  const [freeCount,setFreeCount] = useState()
 
   useEffect(()=>{
       const fetchData = async () => {
@@ -173,7 +172,7 @@ function ComboTourAbout() {
         totalKidsPrice = initialPrice * 0.4 * kidsCount;
       }
 
-      setPrice(totalKidsPrice + totalAdultPrice);
+      setPrice(parseInt(totalKidsPrice + totalAdultPrice));
     }
     
   },[kidsCount, showKids, selectedNumbers, dateRange])
@@ -284,35 +283,35 @@ function ComboTourAbout() {
     const updatedTourDateRanges = [...tourDateRanges];
     updatedTourDateRanges[index] = date;
     setTourDateRanges(updatedTourDateRanges);
-    const promises = updatedTourDateRanges.map((tourDate, idx) => {
-      if (!tourDate) return Promise.resolve(null);
-      const formattedDate = ConvertDates(tourDate.toLocaleDateString('ru-RU'));
-      return checkValidableData(formattedDate, combTour.tours[idx]);
-    });
-    // Выполняем все запросы параллельно
-    const dataResults = await Promise.all(promises);
-
-    // Обработка результатов
-    dataResults.forEach((data, idx) => {
-      const id = combTour.tours[idx];
-      setFreeCount((prevFreeCount) => ({
-        ...prevFreeCount,
-        [id]: data,
-      }));
-    });
   };  
 
   const addToCart = async () => {
     try {
-      if (formattedDateRange && count && selectedNumbers && kidsCount) {
+      console.log('1')
+      if (formattedDateRange && count && selectedNumbers) {
+        console.log('2')
         if (selectedNumbers.reduce((sum,current) => {
           return sum+current[1]
-        },0) === (count + kidsCount)) {
+        },0) >= (count + kidsCount)) {
+          console.log('3')
+          let isTourDates = true
+          tourDateRanges.map(item => 
+            {
+              if(item === null || item === undefined){
+                isTourDates = false
+              }
+            }
+          )
           const dates = formattedDateRange.split(' - ')
           const dateIn = ConvertDates(dates[0])
           const dateOut = ConvertDates(dates[1])
           const allCount = [count,kidsCount].join(',')
-          const data = await addCombToBasket(id, allCount, tourDateRanges, dateIn, dateOut, price, selectedNumbers)
+          let data
+          if(isTourDates){
+            data = await addCombToBasket(id, allCount, tourDateRanges, dateIn, dateOut, price, selectedNumbers)
+          }else{
+            alert('Заполните даты туров')
+          }
           if(data){
             alert('Успешно')
             closeModal()
@@ -536,7 +535,7 @@ function ComboTourAbout() {
                       ))}
                     </div>
                   )}
-                  {(selectedNumbers && tourDateRanges && tourDateRanges.length>0 && selectedNumbers.reduce((sum,current) => {
+                  {(selectedNumbers && tourDateRanges.length>0 && selectedNumbers.reduce((sum,current) => {
                     return sum+current[1]
                   },0) >= (count + kidsCount)) && (
                     <>
